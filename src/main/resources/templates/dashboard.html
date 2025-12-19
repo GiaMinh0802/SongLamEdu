@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thống kê doanh thu - Song Lâm Edu</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div th:replace="fragments/header"></div>
+<div class="app-shell">
+    <div th:replace="fragments/sidebar"></div>
+    <main class="app-content">
+        <h1 class="page-title-box">📊 Thống kê doanh thu</h1>
+
+        <div id="info-container" class="info-wrap">
+
+        </div>
+    </main>
+</div>
+
+<script defer th:src="@{/js/app.js}"></script>
+
+</body>
+</html>

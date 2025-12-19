@@ -1,0 +1,22 @@
+<!-- Sidebar Fragment -->
+<aside class="app-sidebar">
+    <nav class="menu">
+        <ul>
+            <li sec:authorize="hasAnyRole('ADMIN','CASHIER')">
+                <a th:href="@{/info}">🏢 Thông tin Hộ kinh doanh</a>
+            </li>
+            <li sec:authorize="hasRole('ADMIN')">
+                <a th:href="@{/users}">👥 Quản lý người dùng</a>
+            </li>
+            <li sec:authorize="hasAnyRole('ADMIN','CASHIER')">
+                <a th:href="@{/students}">🎓 Quản lý học sinh</a>
+            </li>
+            <li sec:authorize="hasAnyRole('ADMIN','CASHIER')">
+                <a th:href="@{/transactions/revenues}">💰 Quản lý thu</a>
+            </li>
+            <li sec:authorize="hasRole('ADMIN')">
+                <a th:href="@{/dashboard}">📊 Thống kê doanh thu</a>
+            </li>
+        </ul>
+    </nav>
+</aside>

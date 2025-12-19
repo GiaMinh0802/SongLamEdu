@@ -1,0 +1,20 @@
+<!-- Header Fragment -->
+<div class="app-header">
+    <div class="brand" th:href="@{/}">
+        <span class="brand-title">SONG LÂM EDU CENTER</span>
+        <span class="brand-sub">Hệ thống quản lý học phí</span>
+    </div>
+    <div class="header-right">
+        <div class="user-info">
+            <img class="avatar" th:src="@{/images/default-avatar.svg}" alt="avatar">
+            <div class="user-meta">
+                <div class="user-name" sec:authentication="name">user@example.com</div>
+                <div class="user-role" sec:authorize="hasRole('ADMIN')">Admin</div>
+                <div class="user-role" sec:authorize="hasRole('CASHIER')">Cashier</div>
+            </div>
+        </div>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn btn-logout">Đăng xuất</button>
+        </form>
+    </div>
+</div>

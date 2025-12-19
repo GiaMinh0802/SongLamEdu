@@ -1,0 +1,103 @@
+HELP.md
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+### Application ###
+application-local.properties
+application-local.yml
+application-prod.properties
+application-prod.yml
+.env
+*.env
+
+### Logs ###
+logs/
+*.log
+
+### Database ###
+*.db
+*.sqlite
+
+########################################
+# OS files
+########################################
+.DS_Store
+Thumbs.db
+
+########################################
+# Upload / Runtime generated files
+########################################
+uploads/
+tmp/
+storage/
+
+########################################
+# Excel / CSV runtime export
+########################################
+*.xlsx
+*.xls
+*.csv
+!src/main/resources/templates/*.xlsx
+
+########################################
+# PDF export runtime files
+########################################
+*.pdf
+
+########################################
+# Test / Coverage
+########################################
+coverage/
+*.exec
+
+########################################
+# Lombok
+########################################
+.lombok/
+
+########################################
+# Backup / temp files
+########################################
+*.bak
+*.swp
+*~
+
+########################################
+# Node / Frontend
+########################################
+node_modules/
+dist/
