@@ -1,46 +1,3 @@
-let infoDatepickers = [];
-let infoDatepickerInitialized = false;
-
-function toggleEditMode() {
-  const container = document.getElementById('info-container');
-  if (!container) return;
-
-  const wasEditing = container.classList.contains('editing');
-  container.classList.toggle('editing');
-  const isEditing = container.classList.contains('editing');
-
-  // Toggle view / edit
-  document.querySelectorAll('[data-view]')
-      .forEach(el => el.style.display = isEditing ? 'none' : 'block');
-
-  document.querySelectorAll('[data-edit]')
-      .forEach(el => el.classList.toggle('hidden', !isEditing));
-
-  // Toggle buttons
-  const updateBtn = document.getElementById('btn-update');
-  const saveGroup = document.getElementById('save-group');
-  if (updateBtn) updateBtn.classList.toggle('hidden', isEditing);
-  if (saveGroup) saveGroup.classList.toggle('hidden', !isEditing);
-
-  /* ================================
-     ENTER EDIT MODE
-  ================================= */
-  if (!wasEditing && isEditing) {
-    infoDatepickers = [];
-    document.querySelectorAll('.datepicker-edit').forEach(input => {
-      infoDatepickers.push(new DatePicker(input));
-    });
-  }
-
-  /* ================================
-     EXIT EDIT MODE (HỦY)
-  ================================= */
-  if (wasEditing && !isEditing) {
-    infoDatepickers.forEach(dp => dp.destroy());
-    infoDatepickers = [];
-  }
-}
-
 document.addEventListener('DOMContentLoaded', function() {
   const changePasswordForm = document.getElementById('changePasswordForm');
   const oldPassword = document.getElementById('oldPassword');
@@ -81,7 +38,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     feedback.textContent = message;
     feedback.className = isValid ? 'validation-feedback success' : 'validation-feedback error';
-    input.className = isValid ? 'success' : 'error';
+    // Preserve existing classes (e.g., info-value) and only toggle validation states
+    input.classList.remove('error', 'success');
+    input.classList.add(isValid ? 'success' : 'error');
   }
 
   function removeValidationFeedback(input) {
@@ -89,12 +48,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const feedback = formGroup.querySelector('.validation-feedback');
     const hint = formGroup.querySelector('.hint');
 
-    if (feedback && !hint) {
-      feedback.remove();
-    } else if (feedback && hint) {
+    if (feedback) {
       feedback.remove();
     }
-    input.className = '';
+    // Only remove validation state, keep other classes
+    input.classList.remove('error', 'success');
   }
 
   changePasswordForm.addEventListener('submit', function (e) {
@@ -127,7 +85,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (!isValid) {
       e.preventDefault();
-      const firstError = document.querySelector('.error');
+      const firstError = changePasswordForm.querySelector('input.error');
       if (firstError) {
         firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
