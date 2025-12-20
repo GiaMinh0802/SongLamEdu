@@ -42,7 +42,7 @@ public class AuthController {
         if (authentication != null
                 && authentication.isAuthenticated()
                 && !(authentication instanceof AnonymousAuthenticationToken)) {
-            return "redirect:/info";
+            return "redirect:/me";
         }
 
         if (error != null) {

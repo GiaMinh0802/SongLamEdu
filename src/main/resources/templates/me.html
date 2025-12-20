@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông tin cá nhân - Song Lâm Edu</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link rel="stylesheet" th:href="@{/css/me.css}">
+    <link rel="stylesheet" th:href="@{/css/datepicker.css}">
+</head>
+<body>
+<div th:replace="fragments/header"></div>
+<div class="app-shell">
+    <div th:replace="fragments/sidebar"></div>
+    <main class="app-content">
+        <h1 class="page-title-box">👤 Thông tin cá nhân</h1>
+
+        <div id="info-container" class="info-wrap">
+
+            <div th:if="${param.updated}" class="alert alert-success">
+                ✅ Cập nhật thông tin thành công.
+            </div>
+
+            <form th:action="@{/me}" th:object="${me}" method="post">
+
+                <!-- Section 1: Thông tin cơ bản -->
+                <div class="info-section">
+                    <h2 class="info-section-title">Thông tin cơ bản</h2>
+                    <div class="info-grid">
+                        <div class="info-label">CCCD:</div>
+                        <div>
+                            <div class="info-value" data-view th:text="*{citizenId}">-</div>
+                            <input data-edit class="info-value hidden" type="text" th:field="*{citizenId}" readonly style="background: #f3f4f6; cursor: not-allowed;" />
+                            <small data-edit class="note">⚠️ CCCD không thể thay đổi tại đây</small>
+                        </div>
+
+                        <div class="info-label required">Họ và tên:</div>
+                        <div>
+                            <div class="info-value" data-view th:text="*{fullName}">-</div>
+                            <input data-edit class="info-value hidden" type="text" th:field="*{fullName}" required />
+                        </div>
+
+                        <div class="info-label required">Ngày sinh:</div>
+                        <div>
+                            <div class="info-value" data-view
+                                 th:text="${me.dateOfBirth != null ? #temporals.format(me.dateOfBirth, 'dd/MM/yyyy') : '-'}">
+                            </div>
+                            <input data-edit type="text"
+                                   class="info-value hidden datepicker-edit datepicker-input"
+                                   th:value="${#temporals.format(me.dateOfBirth, 'dd/MM/yyyy')}"
+                                   name="dateOfBirth"
+                                   required />
+                        </div>
+
+                        <div class="info-label required">Giới tính:</div>
+                        <div>
+                            <div class="info-value" data-view th:text="*{sex} == 1 ? 'Nữ' : 'Nam'">-</div>
+                            <select data-edit class="info-value hidden" th:field="*{sex}" required>
+                                <option value="0">Nam</option>
+                                <option value="1">Nữ</option>
+                            </select>
+                        </div>
+
+                        <div class="info-label">Quốc tịch:</div>
+                        <div>
+                            <div class="info-value" data-view th:text="*{nationality}">-</div>
+                            <input data-edit class="info-value hidden" type="text" th:field="*{nationality}" />
+                        </div>
+
+                        <div class="info-label">Quê quán:</div>
+                        <div>
+                            <div class="info-value" data-view th:text="*{placeOfOrigin}">-</div>
+                            <input data-edit class="info-value hidden" type="text" th:field="*{placeOfOrigin}" />
+                        </div>
+
+                        <div class="info-label">Nơi thường trú:</div>
+                        <div>
+                            <div class="info-value" data-view th:text="*{placeOfResidence}">-</div>
+                            <input data-edit class="info-value hidden" type="text" th:field="*{placeOfResidence}" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Thông tin liên hệ -->
+                <div class="info-section">
+                    <h2 class="info-section-title">Thông tin liên hệ</h2>
+                    <div class="info-grid">
+                        <div class="info-label">Địa chỉ:</div>
+                        <div>
+                            <div class="info-value" data-view th:text="*{address}">-</div>
+                            <textarea data-edit class="info-value hidden" th:field="*{address}" rows="2"></textarea>
+                        </div>
+
+                        <div class="info-label">Điện thoại:</div>
+                        <div>
+                            <div class="info-value" data-view th:text="*{phone}">-</div>
+                            <input data-edit class="info-value hidden" type="text" th:field="*{phone}" maxlength="10" />
+                            <small data-edit class="note">Số điện thoại 10 chữ số</small>
+                        </div>
+
+                        <div class="info-label">Email:</div>
+                        <div>
+                            <div class="info-value" data-view th:text="*{email}">-</div>
+                            <input data-edit class="info-value hidden" type="email" th:field="*{email}" readonly style="background: #f3f4f6; cursor: not-allowed;" />
+                            <small data-edit class="note">⚠️ Email dùng cho đăng nhập, không thể thay đổi tại đây</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <button id="btn-update" type="button" class="btn btn-edit primary" data-view onclick="toggleEditMode()">
+                    ✏️ Cập nhật thông tin
+                </button>
+                <div id="save-group" class="hidden" data-edit style="display: flex; gap: 12px;">
+                    <button type="submit" class="btn btn-edit primary">
+                        💾 Lưu thay đổi
+                    </button>
+                    <button type="button" class="btn btn-cancel" onclick="toggleEditMode()">
+                        ✖️ Hủy
+                    </button>
+                </div>
+
+                <!-- Hidden citizen id to preserve value on submit -->
+                <input type="hidden" th:field="*{citizenId}" />
+            </form>
+        </div>
+
+        <div id="password-container" class="info-wrap">
+
+            <div th:if="${param.success}" class="alert alert-success">
+                ✅ Đổi mật khẩu thành công
+            </div>
+
+            <h2 id="password" class="info-section-title">🔐 Đổi mật khẩu</h2>
+
+            <form th:action="@{/me/change-password}" method="post" id="changePasswordForm">
+
+                <div class="info-grid">
+                    <div class="info-label required">Mật khẩu cũ:</div>
+                    <div>
+                        <input type="password" id="oldPassword" th:name="oldPassword" class="info-value" required />
+                        <input type="hidden" id="errorHidden" th:value="${param.error}" />
+                    </div>
+
+                    <div class="info-label required">Mật khẩu mới:</div>
+                    <div>
+                        <input type="password" id="newPassword" th:name="newPassword" class="info-value" required />
+                    </div>
+
+                    <div class="info-label required">Xác nhận mật khẩu mới:</div>
+                    <div>
+                        <input type="password" id="confirmPassword" name="confirmPassword" class="info-value" required />
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <button type="submit" class="btn btn-edit primary">
+                        🔄 Đổi mật khẩu
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </main>
+</div>
+
+<script th:src="@{/js/datepicker.js}"></script>
+<script th:src="@{/js/app.js}"></script>
+<script th:src="@{/js/me.js}"></script>
+<script th:if="${param.updated}">
+    setTimeout(() => {
+        window.location.href = '/me';
+    }, 5000);
+</script>
+<script th:if="${param.success}">
+    setTimeout(() => {
+        window.location.href = '/me';
+    }, 5000);
+</script>
+
+</body>
+</html>

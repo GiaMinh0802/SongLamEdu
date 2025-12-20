@@ -1,5 +1,6 @@
 package com.songlam.edu.service;
 
+import com.songlam.edu.dto.MeDTO;
 import com.songlam.edu.dto.RegisterDTO;
 import com.songlam.edu.entity.Person;
 import com.songlam.edu.entity.User;
@@ -31,6 +32,10 @@ public class UserService {
 
     public boolean existsByEmail(String email) {
         return userRepository.existsByPersonEmail(email);
+    }
+
+    public boolean checkMatchPassword(String oldPassword, String encodedPassword) {
+        return passwordEncoder.matches(oldPassword, encodedPassword);
     }
 
     @Transactional
@@ -93,5 +98,25 @@ public class UserService {
         user.setIsActive(false); // Need admin to activate
 
         return userRepository.save(user);
+    }
+
+    public MeDTO toDTOForMe(User user) {
+        MeDTO dto = new MeDTO();
+        if (user == null) return dto;
+        Person person = user.getPerson();
+        if (person != null) {
+            dto.setCitizenId(person.getCitizenId());
+            dto.setFullName(person.getFullName());
+            dto.setDateOfBirth(person.getDateOfBirth());
+            dto.setSex(person.getSex());
+            dto.setNationality(person.getNationality());
+            dto.setPlaceOfOrigin(person.getPlaceOfOrigin());
+            dto.setPlaceOfResidence(person.getPlaceOfResidence());
+            dto.setAddress(person.getAddress());
+            dto.setPhone(person.getPhone());
+            dto.setEmail(person.getEmail());
+        }
+
+        return dto;
     }
 }

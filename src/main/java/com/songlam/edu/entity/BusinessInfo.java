@@ -56,6 +56,12 @@ public class BusinessInfo {
     @Column(name = "representative_title", nullable = false)
     private String representativeTitle;
 
+    @Column(name = "fax", length = 20)
+    private String fax;
+
+    @Column(name = "website")
+    private String website;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

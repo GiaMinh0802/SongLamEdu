@@ -18,4 +18,13 @@ public class TransactionController {
         model.addAttribute("isAdmin", isAdmin);
         return "revenues";
     }
+
+    @GetMapping("/expenses")
+    public String viewExpenses(Model model, Authentication authentication) {
+
+        boolean isAdmin = authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        model.addAttribute("isAdmin", isAdmin);
+        return "expenses";
+    }
 }

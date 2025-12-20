@@ -73,7 +73,7 @@ public class SecurityConfig {
             @Override
             public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                               Authentication authentication) throws IOException {
-                response.sendRedirect("/info");
+                response.sendRedirect("/me");
             }
         };
     }
@@ -125,6 +125,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/login", "/register", "/forgot-password", "/reset-password", "/css/**", "/js/**", "/images/**").permitAll()
                 .requestMatchers("/users/**", "/dashboard/**").hasRole("ADMIN")
+                .requestMatchers("/transactions/**").hasAnyRole("ADMIN", "CASHIER")
+                .requestMatchers("/me").hasAnyRole("ADMIN", "CASHIER")
                 .requestMatchers(HttpMethod.GET, "/info").hasAnyRole("ADMIN", "CASHIER")
                 .requestMatchers(HttpMethod.POST, "/info").hasRole("ADMIN")
                 .anyRequest().authenticated()

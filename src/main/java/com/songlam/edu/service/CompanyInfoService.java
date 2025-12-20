@@ -41,6 +41,8 @@ public class CompanyInfoService {
         info.setIssuedDate(dto.getIssuedDate());
         info.setIssuedPlace(dto.getIssuedPlace());
         info.setRepresentativeTitle(dto.getRepresentativeTitle());
+        info.setFax(dto.getFax());
+        info.setWebsite(dto.getWebsite());
 
         // Map owner (representative)
         Person owner;
@@ -56,9 +58,6 @@ public class CompanyInfoService {
         if (dto.getRepresentativeName() != null) owner.setFullName(dto.getRepresentativeName());
         if (dto.getAddress() != null) owner.setAddress(dto.getAddress());
         if (dto.getPhone() != null) owner.setPhone(dto.getPhone());
-        owner.setFax(dto.getFax());
-        // Tránh cập nhật email vì liên kết User <-> Person dựa trên email (FK)
-        owner.setWebsite(dto.getWebsite());
 
         // Persist owner first (email unique constraint)
         owner = personRepository.save(owner);
@@ -80,15 +79,15 @@ public class CompanyInfoService {
         dto.setIssuedDate(info.getIssuedDate());
         dto.setIssuedPlace(info.getIssuedPlace());
         dto.setRepresentativeTitle(info.getRepresentativeTitle());
+        dto.setFax(info.getFax());
+        dto.setWebsite(info.getWebsite());
 
         if (info.getOwner() != null) {
             dto.setOwnerCitizenId(info.getOwner().getCitizenId());
             dto.setRepresentativeName(info.getOwner().getFullName());
             dto.setAddress(info.getOwner().getAddress());
             dto.setPhone(info.getOwner().getPhone());
-            dto.setFax(info.getOwner().getFax());
             dto.setEmail(info.getOwner().getEmail());
-            dto.setWebsite(info.getOwner().getWebsite());
         }
         return dto;
     }

@@ -14,6 +14,9 @@
             <li sec:authorize="hasAnyRole('ADMIN','CASHIER')">
                 <a th:href="@{/transactions/revenues}">💰 Quản lý thu</a>
             </li>
+            <li sec:authorize="hasAnyRole('ADMIN','CASHIER')">
+                <a th:href="@{/transactions/expenses}">💸 Quản lý chi</a>
+            </li>
             <li sec:authorize="hasRole('ADMIN')">
                 <a th:href="@{/dashboard}">📊 Thống kê doanh thu</a>
             </li>

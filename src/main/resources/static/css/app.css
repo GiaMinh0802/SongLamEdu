@@ -500,6 +500,46 @@ select:hover {
   min-height: calc(100vh - 60px);
 }
 
+/* ================= FIX SIDEBAR SCROLL ================= */
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+.app-shell {
+  height: calc(100vh - 60px); /* trừ header */
+}
+
+.app-sidebar {
+  position: sticky;
+  top: 60px; /* chiều cao header */
+  height: calc(100vh - 60px);
+  overflow-y: auto;
+}
+
+.app-content {
+  height: calc(100vh - 60px);
+  overflow-y: auto;
+}
+
+@media (max-width: 960px) {
+  html, body {
+    overflow: auto;
+  }
+
+  .app-sidebar {
+    position: relative;
+    top: 0;
+    height: auto;
+  }
+
+  .app-content {
+    height: auto;
+    overflow: visible;
+  }
+}
+
 /* Page Title in Box */
 .page-title-box {
   background: linear-gradient(135deg, var(--primary-start) 0%, var(--primary-end) 100%);

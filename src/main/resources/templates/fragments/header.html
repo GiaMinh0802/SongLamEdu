@@ -6,7 +6,9 @@
     </div>
     <div class="header-right">
         <div class="user-info">
-            <img class="avatar" th:src="@{/images/default-avatar.svg}" alt="avatar">
+            <a th:href="@{/me}" class="avatar-link">
+                <img class="avatar" th:src="@{/images/default-avatar.svg}" alt="avatar">
+            </a>
             <div class="user-meta">
                 <div class="user-name" sec:authentication="name">user@example.com</div>
                 <div class="user-role" sec:authorize="hasRole('ADMIN')">Admin</div>

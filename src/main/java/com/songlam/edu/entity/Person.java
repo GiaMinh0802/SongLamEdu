@@ -46,14 +46,8 @@ public class Person {
     @Column(name = "phone", length = 10, nullable = false)
     private String phone;
 
-    @Column(name = "fax", length = 20)
-    private String fax;
-
     @Column(name = "email", unique = true, nullable = false)
     private String email;
-
-    @Column(name = "website")
-    private String website;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
