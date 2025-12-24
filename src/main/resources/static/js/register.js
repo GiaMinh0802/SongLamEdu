@@ -1,5 +1,3 @@
-// Register page JavaScript
-
 document.addEventListener('DOMContentLoaded', function() {
     const registerForm = document.getElementById('registerForm');
     const citizenIdInput = document.getElementById('citizenId');
@@ -11,94 +9,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const passwordInput = document.getElementById('password');
     const confirmPasswordInput = document.getElementById('confirmPassword');
 
-    // Validation functions
-    function validateCitizenId(citizenId) {
-        // Must be 12 digits or max 15 characters (for format like 033169011971-01)
-        const re = /^\d{12}$|^[\d-]{1,15}$/;
-        return re.test(citizenId);
-    }
-
-    function validateFullName(name) {
-        // Only Vietnamese characters and spaces
-        const re = /^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹ\s]+$/;
-        return re.test(name) && name.trim().length >= 2;
-    }
-
-    function validatePhone(phone) {
-        // Must be exactly 10 digits
-        const re = /^\d{10}$/;
-        return re.test(phone);
-    }
-
-    function validateEmail(email) {
-        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return re.test(email);
-    }
-
-    function validatePassword(password) {
-        // Min 8 chars, at least one uppercase, one lowercase, one number
-        const re = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-        return re.test(password);
-    }
-
-    function validateAge(dateStr) {
-        // Parse dd/MM/yyyy format
-        const parts = dateStr.split('/');
-        if (parts.length !== 3) return false;
-
-        const day = parseInt(parts[0], 10);
-        const month = parseInt(parts[1], 10) - 1;
-        const year = parseInt(parts[2], 10);
-
-        const birthDate = new Date(year, month, day);
-        if (isNaN(birthDate.getTime())) return false;
-
-        const today = new Date();
-        let age = today.getFullYear() - birthDate.getFullYear();
-        const monthDiff = today.getMonth() - birthDate.getMonth();
-
-        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-            age--;
-        }
-
-        return age >= 16 && age <= 100;
-    }
-
-    // Add validation feedback
-    function addValidationFeedback(input, isValid, message) {
-        const formGroup = input.parentElement;
-        let feedback = formGroup.querySelector('.validation-feedback');
-
-        if (!feedback) {
-            feedback = document.createElement('small');
-            feedback.className = 'validation-feedback';
-            formGroup.appendChild(feedback);
-        }
-
-        feedback.textContent = message;
-        feedback.className = isValid ? 'validation-feedback success' : 'validation-feedback error';
-        input.className = isValid ? 'success' : 'error';
-    }
-
-    function removeValidationFeedback(input) {
-        const formGroup = input.parentElement;
-        const feedback = formGroup.querySelector('.validation-feedback');
-        const hint = formGroup.querySelector('.hint');
-
-        if (feedback && !hint) {
-            feedback.remove();
-        } else if (feedback && hint) {
-            feedback.remove();
-        }
-        input.className = '';
-    }
-
     // CCCD validation
     citizenIdInput.addEventListener('blur', function() {
+        const re = /^\d{12}$/;
         if (this.value.trim() === '') {
             addValidationFeedback(this, false, 'CCCD không được để trống');
-        } else if (!validateCitizenId(this.value)) {
-            addValidationFeedback(this, false, 'CCCD phải là 12 số hoặc định dạng hợp lệ');
+        } else if (!re.test(this.value)) {
+            addValidationFeedback(this, false, 'CCCD phải là 12 số');
         } else {
             removeValidationFeedback(this);
         }
@@ -120,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (this.value === '') {
             addValidationFeedback(this, false, 'Ngày sinh không được để trống');
         } else if (!validateAge(this.value)) {
-            addValidationFeedback(this, false, 'Tuổi phải từ 16 đến 100');
+            addValidationFeedback(this, false, 'Phải từ 6 tuổi trở lên');
         } else {
             removeValidationFeedback(this);
         }

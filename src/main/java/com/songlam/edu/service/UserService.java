@@ -6,7 +6,6 @@ import com.songlam.edu.entity.Person;
 import com.songlam.edu.entity.User;
 import com.songlam.edu.repository.PersonRepository;
 import com.songlam.edu.repository.UserRepository;
-import com.songlam.edu.util.ValidationUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,23 +29,8 @@ public class UserService {
         return userRepository.findByPersonEmail(email);
     }
 
-    public boolean existsByEmail(String email) {
-        return userRepository.existsByPersonEmail(email);
-    }
-
     public boolean checkMatchPassword(String oldPassword, String encodedPassword) {
         return passwordEncoder.matches(oldPassword, encodedPassword);
-    }
-
-    @Transactional
-    public User save(User user) {
-        return userRepository.save(user);
-    }
-
-    @Transactional
-    public User createUser(User user, String rawPassword) {
-        user.setPasswordHash(passwordEncoder.encode(rawPassword));
-        return userRepository.save(user);
     }
 
     @Transactional
@@ -55,29 +39,16 @@ public class UserService {
         userRepository.save(user);
     }
 
-    @Transactional
-    public User registerCashier(RegisterDTO registerDTO) {
-        // Validate password
-        if (!ValidationUtil.isValidPassword(registerDTO.getPassword())) {
-            throw new IllegalArgumentException(ValidationUtil.getPasswordValidationMessage());
-        }
+    public void registerCashier(RegisterDTO registerDTO) {
 
-        // Check if password matches
-        if (!registerDTO.getPassword().equals(registerDTO.getConfirmPassword())) {
-            throw new IllegalArgumentException("Mật khẩu xác nhận không khớp");
-        }
-
-        // Check if email already exists
         if (userRepository.existsByPersonEmail(registerDTO.getEmail())) {
             throw new IllegalArgumentException("Email đã được đăng ký");
         }
 
-        // Check if citizen ID already exists
         if (personRepository.existsById(registerDTO.getCitizenId())) {
             throw new IllegalArgumentException("CCCD đã được đăng ký");
         }
 
-        // Create Person entity
         Person person = new Person();
         person.setCitizenId(registerDTO.getCitizenId());
         person.setFullName(registerDTO.getFullName());
@@ -85,19 +56,12 @@ public class UserService {
         person.setSex(registerDTO.getSex());
         person.setPhone(registerDTO.getPhone());
         person.setEmail(registerDTO.getEmail());
-        person.setAddress(registerDTO.getAddress());
-        person.setNationality("Việt Nam");
-
         personRepository.save(person);
 
-        // Create User entity
         User user = new User();
-        user.setPerson(person);
         user.setPasswordHash(passwordEncoder.encode(registerDTO.getPassword()));
-        user.setRole((short) 0); // 0 = Cashier
-        user.setIsActive(false); // Need admin to activate
-
-        return userRepository.save(user);
+        user.setPerson(person);
+        userRepository.save(user);
     }
 
     public MeDTO toDTOForMe(User user) {
@@ -116,7 +80,6 @@ public class UserService {
             dto.setPhone(person.getPhone());
             dto.setEmail(person.getEmail());
         }
-
         return dto;
     }
 }

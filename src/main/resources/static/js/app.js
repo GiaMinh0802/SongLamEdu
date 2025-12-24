@@ -3,7 +3,6 @@ document.addEventListener('DOMContentLoaded', function () {
   // Placeholder: could add sidebar toggle for mobile later
 });
 
-// ================== Shared Info/Edit behaviors (used by info.html & me.html) ==================
 let infoDatepickers = [];
 let infoDatepickerInitialized = false;
 
@@ -42,5 +41,7 @@ function toggleEditMode() {
     infoDatepickers.forEach(dp => dp.destroy());
     infoDatepickers = [];
     infoDatepickerInitialized = false;
+
+    removeAllValidationFeedback(container);
   }
 }

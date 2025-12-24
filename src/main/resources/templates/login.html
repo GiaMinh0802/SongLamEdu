@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng nhập - Song Lâm Edu</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
     <link rel="stylesheet" th:href="@{/css/login.css}">
 </head>
 <body>
@@ -14,12 +15,12 @@
             <h1>Đăng nhập</h1>
         </div>
 
-        <div th:if="${error}" class="alert alert-error">
-            <span th:text="${error}"></span>
+        <div th:if="${success}" class="alert alert-success">
+            <span>Đăng ký thành công</span>
         </div>
 
-        <div th:if="${success}" class="alert alert-success">
-            <span th:text="${success}">Đăng ký thành công</span>
+        <div th:if="${error}" class="alert alert-error">
+            <span th:text="${error}"></span>
         </div>
 
         <form th:action="@{/login}" method="post">
@@ -47,6 +48,7 @@
         </div>
     </div>
 
+    <script th:src="@{/js/common.js}"></script>
     <script th:src="@{/js/login.js}"></script>
 </body>
 </html>

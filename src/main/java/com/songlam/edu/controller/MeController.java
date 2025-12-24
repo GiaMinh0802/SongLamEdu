@@ -31,10 +31,6 @@ public class MeController {
         User user = userService.findByEmail(authentication.getName()).orElse(null);
         MeDTO dto = userService.toDTOForMe(user);
         model.addAttribute("me", dto);
-
-        boolean isAdmin = authentication != null && authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        model.addAttribute("isAdmin", isAdmin);
         return "me";
     }
 

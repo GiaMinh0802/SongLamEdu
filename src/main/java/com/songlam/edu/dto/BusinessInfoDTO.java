@@ -7,7 +7,6 @@ import java.time.LocalDate;
 
 @Data
 public class BusinessInfoDTO {
-    // BusinessInfo fields
     private String companyCode;
     private String businessName;
     private String abbreviatedName;
@@ -20,10 +19,8 @@ public class BusinessInfoDTO {
     private LocalDate issuedDate;
     private String issuedPlace;
     private String representativeTitle;
-
-    // Owner (representative) fields from Person
     private String ownerCitizenId;
-    private String representativeName; // Person.fullName
+    private String representativeName;
     private String address;
     private String phone;
     private String fax;

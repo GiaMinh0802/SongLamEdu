@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Không có quyền truy cập</title>
+    <title>Không tìm thấy trang - 404</title>
     <style>
         * {
             margin: 0;
@@ -54,13 +54,12 @@
         .error-icon {
             font-size: 120px;
             margin-bottom: 20px;
-            animation: shake 2s ease-in-out infinite;
+            animation: float 3s ease-in-out infinite;
         }
 
-        @keyframes shake {
-            0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(-5deg); }
-            75% { transform: rotate(5deg); }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
         }
 
         .error-code {
@@ -119,6 +118,35 @@
             color: var(--muted);
             font-size: 14px;
             line-height: 1.8;
+        }
+
+        .error-details p {
+            color: var(--muted);
+            font-size: 13px;
+            margin-top: 10px;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            word-break: break-all;
+        }
+
+        .search-box {
+            margin-bottom: 30px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-start);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
         .error-actions {
@@ -247,28 +275,24 @@
 </head>
 <body>
 <div class="error-container">
-    <div class="error-icon">🚫</div>
-    <div class="error-code">403</div>
-    <h1 class="error-title">Không có quyền truy cập</h1>
+    <div class="error-icon">🔍</div>
+    <div class="error-code">404</div>
+    <h1 class="error-title">Không tìm thấy tài nguyên</h1>
     <p class="error-message">
-        Xin lỗi, bạn không có quyền truy cập vào trang này. Vui lòng kiểm tra lại quyền hạn của bạn hoặc liên hệ với quản trị viên.
+        Rất tiếc, tài nguyên không tồn tại hoặc đã bị di chuyển.<br>Vui lòng thử lại sau hoặc liên hệ với quản trị viên.
     </p>
 
     <div class="error-details">
-        <strong>Nguyên nhân có thể:</strong>
+        <strong>Có thể do:</strong>
         <ul>
-            <li>Tài khoản của bạn không có quyền truy cập trang này</li>
-            <li>Phiên đăng nhập của bạn đã hết hạn</li>
-            <li>Trang yêu cầu quyền quản trị viên (ADMIN)</li>
+            <li>Tài nguyên đã bị xóa hoặc di chuyển</li>
+            <li>Liên kết bạn nhấp vào đã hết hạn</li>
         </ul>
     </div>
 
     <div class="error-actions">
-        <a href="/login" class="btn btn-primary">
-            🔐 Đăng nhập lại
-        </a>
-        <a href="/info" class="btn btn-secondary">
-            🏠 Về trang chủ
+        <a href="javascript:history.back()" class="btn btn-primary">
+            ⬅️ Quay lại
         </a>
     </div>
 

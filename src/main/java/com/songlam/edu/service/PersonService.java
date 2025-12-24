@@ -16,7 +16,7 @@ public class PersonService {
     }
 
     @Transactional
-    public Person updateMeInfo(MeDTO dto) {
+    public void updateMeInfo(MeDTO dto) {
         Person person = personRepository.findByEmail(dto.getEmail()).orElseGet(Person::new);
 
         person.setFullName(dto.getFullName());
@@ -28,6 +28,6 @@ public class PersonService {
         person.setAddress(dto.getAddress());
         person.setPhone(dto.getPhone());
 
-        return personRepository.save(person);
+        personRepository.save(person);
     }
 }

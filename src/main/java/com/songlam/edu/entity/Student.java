@@ -23,11 +23,6 @@ public class Student {
     @Column(name = "citizen_id", length = 15)
     private String citizenId;
 
-    @OneToOne
-    @MapsId
-    @JoinColumn(name = "citizen_id", referencedColumnName = "citizen_id")
-    private Person student;
-
     @Column(name = "start_date")
     private LocalDate startDate;
 
@@ -37,6 +32,19 @@ public class Student {
     @Column(name = "status")
     private Short status = 1; // 0: stopped, 1: studying
 
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @OneToOne(fetch = FetchType.LAZY)
+    @MapsId
+    @JoinColumn(name = "citizen_id", referencedColumnName = "citizen_id")
+    private Person person;
+
+    @JsonIgnore
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
+    private List<Transaction> transactions;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -44,10 +52,4 @@ public class Student {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    @JsonIgnore
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
-    private List<Transaction> transactions;
 }

@@ -27,10 +27,9 @@ public class CompanyInfoService {
     }
 
     @Transactional
-    public BusinessInfo updateBusinessInfo(BusinessInfoDTO dto) {
+    public void updateBusinessInfo(BusinessInfoDTO dto) {
         BusinessInfo info = getBusinessInfo().orElseGet(BusinessInfo::new);
 
-        // Map BusinessInfo fields
         info.setCompanyCode(dto.getCompanyCode());
         info.setBusinessName(dto.getBusinessName());
         info.setAbbreviatedName(dto.getAbbreviatedName());
@@ -44,10 +43,9 @@ public class CompanyInfoService {
         info.setFax(dto.getFax());
         info.setWebsite(dto.getWebsite());
 
-        // Map owner (representative)
         Person owner;
-        if (info.getOwner() != null) {
-            owner = info.getOwner();
+        if (info.getPerson() != null) {
+            owner = info.getPerson();
         } else if (dto.getOwnerCitizenId() != null && !dto.getOwnerCitizenId().isBlank()) {
             owner = personRepository.findById(dto.getOwnerCitizenId()).orElseGet(Person::new);
             owner.setCitizenId(dto.getOwnerCitizenId());
@@ -58,12 +56,12 @@ public class CompanyInfoService {
         if (dto.getRepresentativeName() != null) owner.setFullName(dto.getRepresentativeName());
         if (dto.getAddress() != null) owner.setAddress(dto.getAddress());
         if (dto.getPhone() != null) owner.setPhone(dto.getPhone());
+        if (dto.getEmail() != null) owner.setEmail(dto.getEmail());
 
-        // Persist owner first (email unique constraint)
         owner = personRepository.save(owner);
-        info.setOwner(owner);
+        info.setPerson(owner);
 
-        return businessInfoRepository.save(info);
+        businessInfoRepository.save(info);
     }
 
     public BusinessInfoDTO toDTO(BusinessInfo info) {
@@ -82,12 +80,12 @@ public class CompanyInfoService {
         dto.setFax(info.getFax());
         dto.setWebsite(info.getWebsite());
 
-        if (info.getOwner() != null) {
-            dto.setOwnerCitizenId(info.getOwner().getCitizenId());
-            dto.setRepresentativeName(info.getOwner().getFullName());
-            dto.setAddress(info.getOwner().getAddress());
-            dto.setPhone(info.getOwner().getPhone());
-            dto.setEmail(info.getOwner().getEmail());
+        if (info.getPerson() != null) {
+            dto.setOwnerCitizenId(info.getPerson().getCitizenId());
+            dto.setRepresentativeName(info.getPerson().getFullName());
+            dto.setAddress(info.getPerson().getAddress());
+            dto.setPhone(info.getPerson().getPhone());
+            dto.setEmail(info.getPerson().getEmail());
         }
         return dto;
     }

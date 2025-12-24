@@ -6,8 +6,4 @@ public class AccountNotActivatedException extends AuthenticationException {
     public AccountNotActivatedException(String msg) {
         super(msg);
     }
-
-    public AccountNotActivatedException(String msg, Throwable cause) {
-        super(msg, cause);
-    }
 }

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý học sinh - Song Lâm Edu</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/datepicker.css}">
+</head>
+<body>
+<div th:replace="fragments/header"></div>
+<div class="app-shell">
+    <div th:replace="fragments/sidebar"></div>
+    <main class="app-content">
+        <h1 class="page-title-box">🎓 Quản lý học sinh</h1>
+
+        <div id="info-container" class="info-wrap">
+
+            <button type="button" class="btn btn-back" onclick="window.location.href = '/students'">
+                ⬅️ Trở về
+            </button>
+
+            <div th:if="${param.updated}" class="alert alert-success">
+                ✅ Cập nhật thông tin thành công.
+            </div>
+
+            <form th:action="@{/students/detail/{id}}" th:object="${student}" method="post" id="changeInfoForm">
+
+                <div class="info-section">
+                    <h2 class="info-section-title">Thông tin cơ bản</h2>
+                    <div class="info-grid">
+                        <div class="info-label">CCCD:</div>
+                        <div>
+                            <div class="info-value" data-view th:text="*{citizenId}">-</div>
+                            <input data-edit class="info-value hidden" type="text" th:field="*{citizenId}" readonly style="background: #f3f4f6; cursor: not-allowed;" />
+                            <small data-edit class="note">⚠️ CCCD không thể thay đổi</small>
+                        </div>
+
+                        <div class="info-label required">Họ và tên:</div>
+                        <div>
+                            <div class="info-value" data-view th:text="*{person.fullName}">-</div>
+                            <input data-edit class="info-value hidden" id="fullName" type="text" th:field="*{person.fullName}" required />
+                        </div>
+
+                        <div class="info-label required">Ngày sinh:</div>
+                        <div>
+                            <div class="info-value" data-view
+                                 th:text="${student.person.dateOfBirth != null ? #temporals.format(student.person.dateOfBirth, 'dd/MM/yyyy') : '-'}">
+                            </div>
+                            <input data-edit type="text"
+                                   class="info-value hidden datepicker-edit datepicker-input"
+                                   id="dateOfBirth"
+                                   th:value="${#temporals.format(student.person.dateOfBirth, 'dd/MM/yyyy')}"
+                                   name="dateOfBirth"
+                                   required />
+                        </div>
+
+                        <div class="info-label required">Giới tính:</div>
+                        <div>
+                            <div class="info-value" data-view th:text="*{person.sex} == 1 ? 'Nữ' : 'Nam'">-</div>
+                            <select data-edit class="info-value hidden" id="sex" th:field="*{person.sex}" required>
+                                <option value="0">Nam</option>
+                                <option value="1">Nữ</option>
+                            </select>
+                        </div>
+
+                        <div class="info-label">Quốc tịch:</div>
+                        <div>
+                            <div class="info-value" data-view th:text="*{person.nationality}">-</div>
+                            <input data-edit class="info-value hidden" type="text" th:field="*{person.nationality}" />
+                        </div>
+
+                        <div class="info-label">Quê quán:</div>
+                        <div>
+                            <div class="info-value" data-view th:text="*{person.placeOfOrigin}">-</div>
+                            <input data-edit class="info-value hidden" type="text" th:field="*{person.placeOfOrigin}" />
+                        </div>
+
+                        <div class="info-label">Nơi thường trú:</div>
+                        <div>
+                            <div class="info-value" data-view th:text="*{person.placeOfResidence}">-</div>
+                            <input data-edit class="info-value hidden" type="text" th:field="*{person.placeOfResidence}" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-section">
+                    <h2 class="info-section-title">Thông tin liên hệ</h2>
+                    <div class="info-grid">
+                        <div class="info-label">Địa chỉ:</div>
+                        <div>
+                            <div class="info-value" data-view th:text="*{person.address}">-</div>
+                            <textarea data-edit class="info-value hidden" th:field="*{person.address}" rows="2"></textarea>
+                        </div>
+
+                        <div class="info-label required">Điện thoại:</div>
+                        <div>
+                            <div class="info-value" data-view th:text="*{person.phone}">-</div>
+                            <input data-edit class="info-value hidden" id="phone" type="text" th:field="*{person.phone}" maxlength="10" />
+                            <small data-edit class="note">Số điện thoại 10 chữ số</small>
+                        </div>
+
+                        <div class="info-label">Email:</div>
+                        <div>
+                            <div class="info-value" data-view th:text="*{person.email}">-</div>
+                            <input data-edit class="info-value hidden" type="email" th:field="*{person.email}" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-section">
+                    <h2 class="info-section-title">Tình trạng học</h2>
+                    <div class="info-grid">
+                        <div class="info-label">Tình trạng:</div>
+                        <div>
+                            <div class="info-value" data-view th:text="*{status} == 1 ? 'Đang học' : 'Thôi học'">-</div>
+                            <select data-edit class="info-value hidden" id="status" th:field="*{status}" required>
+                                <option value="1">Còn học</option>
+                                <option value="0">Thôi học</option>
+                            </select>
+                        </div>
+
+                        <div class="info-label">Ngày nhập học:</div>
+                        <div>
+                            <div class="info-value" data-view
+                                 th:text="${student.startDate != null ? #temporals.format(student.startDate, 'dd/MM/yyyy') : '-'}">
+                            </div>
+                            <input data-edit type="text"
+                                   class="info-value hidden"
+                                   id="startDate"
+                                   th:value="${#temporals.format(student.startDate, 'dd/MM/yyyy')}"
+                                   name="startDate"
+                                   readonly style="background: #f3f4f6; cursor: not-allowed;" />
+                        </div>
+
+                        <div class="info-label">Ngày thôi học:</div>
+                        <div>
+                            <div class="info-value" data-view
+                                 th:text="${student.endDate != null ? #temporals.format(student.endDate, 'dd/MM/yyyy') : ''}">
+                            </div>
+                            <input data-edit type="text"
+                                   class="info-value hidden datepicker-edit datepicker-input"
+                                   id="endDate"
+                                   th:value="${student.endDate != null ? #temporals.format(student.endDate, 'dd/MM/yyyy') : ''}"
+                                   name="endDate"
+                                   required />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <button id="btn-update" type="button" class="btn btn-edit primary" data-view onclick="toggleEditMode()">
+                    ✏️ Cập nhật thông tin
+                </button>
+                <div id="save-group" class="hidden" data-edit style="display: flex; gap: 12px;">
+                    <button type="submit" class="btn btn-edit primary">
+                        💾 Lưu thay đổi
+                    </button>
+                    <button type="button" class="btn btn-cancel" onclick="toggleEditMode()">
+                        ✖️ Hủy
+                    </button>
+                </div>
+
+                <!-- Hidden citizen id to preserve value on submit -->
+                <input type="hidden" th:field="*{citizenId}" />
+            </form>
+        </div>
+    </main>
+</div>
+
+<script th:src="@{/js/app.js}"></script>
+<script th:src="@{/js/common.js}"></script>
+<script th:src="@{/js/datepicker.js}"></script>
+<script th:src="@{/js/student-detail.js}"></script>
+
+</body>
+</html>

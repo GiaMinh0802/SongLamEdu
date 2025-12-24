@@ -33,21 +33,11 @@ public class Transaction {
     @Column(name = "date_of_document", nullable = false)
     private LocalDate dateOfDocument;
 
-    @JsonIgnore
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "student_id", referencedColumnName = "citizen_id")
-    private Student student;
-
     @Column(name = "reason", nullable = false, columnDefinition = "TEXT")
     private String reason;
 
     @Column(name = "amount", nullable = false, precision = 15, scale = 2)
     private BigDecimal amount;
-
-    @Column(name = "amount_in_words")
-    private String amountInWords;
 
     @Column(name = "attachments")
     private String attachments;
@@ -58,11 +48,21 @@ public class Transaction {
     @Column(name = "note", columnDefinition = "TEXT")
     private String note;
 
+    @Column(name = "is_active")
+    private Boolean isActive = true;
+
     @JsonIgnore
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cashier_id")
+    @JoinColumn(name = "student_id", referencedColumnName = "citizen_id")
+    private Student student;
+
+    @JsonIgnore
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cashier_id", referencedColumnName = "citizen_id")
     private User cashier;
 
     @CreationTimestamp

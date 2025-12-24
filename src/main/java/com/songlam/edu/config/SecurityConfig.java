@@ -1,6 +1,5 @@
 package com.songlam.edu.config;
 
-import com.songlam.edu.exception.AccountNotActivatedException;
 import com.songlam.edu.security.UserDetailsServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -46,13 +45,12 @@ public class SecurityConfig {
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
-        // Set hideUserNotFoundExceptions to false to distinguish between user not found and bad credentials
         authProvider.setHideUserNotFoundExceptions(false);
         return authProvider;
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) {
         return authConfig.getAuthenticationManager();
     }
 
@@ -83,38 +81,23 @@ public class SecurityConfig {
         return new AuthenticationFailureHandler() {
             @Override
             public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
-                                              AuthenticationException exception) throws IOException {
+                                                AuthenticationException exception) throws IOException {
                 String username = request.getParameter("username");
-                String errorMessage;
+                String errorMessage = determineErrorMessage(exception);
 
-                // Determine the specific error message based on exception type
-                if (exception instanceof AccountNotActivatedException) {
-                    errorMessage = "Tài khoản chưa được kích hoạt";
-                } else if (exception instanceof UsernameNotFoundException) {
-                    errorMessage = "Tài khoản chưa được đăng ký";
-                } else if (exception instanceof BadCredentialsException) {
-                    errorMessage = "Mật khẩu không chính xác";
-                } else if (exception instanceof InternalAuthenticationServiceException) {
-                    // Check the cause of InternalAuthenticationServiceException
-                    Throwable cause = exception.getCause();
-                    if (cause instanceof AccountNotActivatedException) {
-                        errorMessage = "Tài khoản chưa được kích hoạt";
-                    } else if (cause instanceof UsernameNotFoundException) {
-                        errorMessage = "Tài khoản chưa được đăng ký";
-                    } else {
-                        errorMessage = "Đăng nhập thất bại. Vui lòng thử lại";
-                    }
-                } else {
-                    errorMessage = "Đăng nhập thất bại. Vui lòng thử lại";
-                }
-
-                // Store error message and username in session instead of URL parameters
-                request.getSession().setAttribute("LOGIN_ERROR_MESSAGE", errorMessage);
-                if (username != null && !username.isEmpty()) {
-                    request.getSession().setAttribute("LOGIN_USERNAME", username);
-                }
+                request.getSession().setAttribute("LOGIN_ERROR", errorMessage);
+                request.getSession().setAttribute("LOGIN_USERNAME", username);
 
                 response.sendRedirect("/login?error");
+            }
+
+            private String determineErrorMessage(AuthenticationException exception) {
+                return switch (exception) {
+                    case UsernameNotFoundException usernameNotFoundException -> "Tài khoản chưa được đăng ký";
+                    case BadCredentialsException badCredentialsException -> "Mật khẩu không chính xác";
+                    case InternalAuthenticationServiceException serviceException -> serviceException.getMessage();
+                    case null, default -> "Đăng nhập thất bại. Vui lòng thử lại";
+                };
             }
         };
     }
@@ -125,7 +108,13 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/login", "/register", "/forgot-password", "/reset-password", "/css/**", "/js/**", "/images/**").permitAll()
                 .requestMatchers("/users/**", "/dashboard/**").hasRole("ADMIN")
-                .requestMatchers("/transactions/**").hasAnyRole("ADMIN", "CASHIER")
+                .requestMatchers(HttpMethod.GET, "/transactions/**").hasAnyRole("ADMIN", "CASHIER")
+                .requestMatchers(HttpMethod.POST, "/transactions/revenues").hasRole("CASHIER")
+                .requestMatchers(HttpMethod.POST, "/transactions/revenues/*/cancel").hasAnyRole("ADMIN", "CASHIER")
+                .requestMatchers(HttpMethod.GET, "/students/**").hasAnyRole("ADMIN", "CASHIER")
+                .requestMatchers(HttpMethod.POST, "/students").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/students/import").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/students/import/template").hasRole("ADMIN")
                 .requestMatchers("/me").hasAnyRole("ADMIN", "CASHIER")
                 .requestMatchers(HttpMethod.GET, "/info").hasAnyRole("ADMIN", "CASHIER")
                 .requestMatchers(HttpMethod.POST, "/info").hasRole("ADMIN")

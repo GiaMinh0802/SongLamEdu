@@ -36,7 +36,7 @@ class DatePicker {
         this.wrapper.appendChild(icon);
 
         // Allow manual input
-        this.input.placeholder = 'dd/MM/yyyy';
+        this.input.placeholder = 'dd/mm/yyyy';
         this.input.setAttribute('maxlength', '10');
 
         // Create calendar

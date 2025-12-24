@@ -6,47 +6,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const emailInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');
 
-    // Email validation
-    function validateEmail(email) {
-        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return re.test(email);
-    }
-
-    // Password validation: minimum 8 characters, at least one uppercase, one lowercase, one number
-    function validatePassword(password) {
-        const re = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-        return re.test(password);
-    }
-
-    // Add input validation feedback
-    function addValidationFeedback(input, isValid, message) {
-        const formGroup = input.parentElement;
-        let feedback = formGroup.querySelector('.validation-feedback');
-
-        if (!feedback) {
-            feedback = document.createElement('small');
-            feedback.className = 'validation-feedback';
-            feedback.style.color = isValid ? '#3c3' : '#c33';
-            feedback.style.fontSize = '12px';
-            feedback.style.marginTop = '5px';
-            feedback.style.display = 'block';
-            formGroup.appendChild(feedback);
-        }
-
-        feedback.textContent = message;
-        feedback.style.color = isValid ? '#3c3' : '#c33';
-        input.style.borderColor = isValid ? '#3c3' : '#c33';
-    }
-
-    function removeValidationFeedback(input) {
-        const formGroup = input.parentElement;
-        const feedback = formGroup.querySelector('.validation-feedback');
-        if (feedback) {
-            feedback.remove();
-        }
-        input.style.borderColor = '#ddd';
-    }
-
     // Email input validation
     emailInput.addEventListener('blur', function() {
         if (this.value.trim() === '') {
@@ -113,8 +72,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Don't auto-hide error alerts - user needs to see them
-    // Only auto-hide success alerts
     const successAlerts = document.querySelectorAll('.alert-success');
     successAlerts.forEach(alert => {
         setTimeout(() => {
@@ -124,7 +81,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 5000);
     });
 
-    // Add enter key support for better UX
     emailInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             e.preventDefault();

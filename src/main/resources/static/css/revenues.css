@@ -1,0 +1,81 @@
+/* Table Styles */
+.revenue-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.revenue-table thead {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+}
+
+.revenue-table th {
+    text-align: left;
+    padding: 14px 16px;
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.revenue-table th.text-right {
+    text-align: right;
+}
+
+.revenue-table tbody tr {
+    border-bottom: 1px solid #f0f0f0;
+    transition: all 0.2s ease;
+}
+
+.revenue-table tbody tr:hover {
+    background: #f0fff4;
+    transform: scale(1.01);
+    box-shadow: 0 2px 8px rgba(17, 153, 142, 0.1);
+}
+
+.revenue-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.revenue-table td {
+    padding: 14px 16px;
+    font-size: 14px;
+    color: #333;
+}
+
+.revenue-table td.text-right {
+    text-align: right;
+    font-weight: 600;
+    color: #11998e;
+}
+
+.revenue-table .empty-row {
+    text-align: center;
+    padding: 32px;
+    color: #999;
+    font-style: italic;
+}
+
+/* Cancel form inline */
+.cancel-form {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.cancel-form input {
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    min-width: 150px;
+}
+
+.popup-content .info-value {
+    background: white;
+    border-color: var(--border);
+}

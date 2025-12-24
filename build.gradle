@@ -41,13 +41,13 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    // Apache POI (Excel Import/Export)
-    implementation 'org.apache.poi:poi:5.2.5'
-    implementation 'org.apache.poi:poi-ooxml:5.4.0'
+    // Apache POI for Excel
+    implementation 'org.apache.poi:poi:5.2.3'
+    implementation 'org.apache.poi:poi-ooxml:5.2.3'
+    implementation 'org.apache.commons:commons-collections4:4.4'
 
-    // iText PDF (PDF Export)
-    implementation 'com.itextpdf:itext7-core:8.0.2'
-    implementation 'com.itextpdf:html2pdf:5.0.2'
+    // PDF Export
+    implementation 'com.openhtmltopdf:openhtmltopdf-pdfbox:1.0.10'
 
     // ModelMapper (DTO Mapping)
     implementation 'org.modelmapper:modelmapper:3.2.0'

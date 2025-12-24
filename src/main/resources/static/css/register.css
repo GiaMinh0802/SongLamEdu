@@ -213,21 +213,6 @@ body {
     text-decoration: underline;
 }
 
-/* Validation feedback */
-.validation-feedback {
-    display: block;
-    margin-top: 5px;
-    font-size: 12px;
-}
-
-.validation-feedback.error {
-    color: #c33;
-}
-
-.validation-feedback.success {
-    color: #3c3;
-}
-
 .form-group input.error,
 .form-group select.error,
 .form-group textarea.error {

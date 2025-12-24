@@ -1,30 +1,93 @@
 package com.songlam.edu.controller;
 
+import com.songlam.edu.dto.TransactionDTO;
+import com.songlam.edu.entity.Transaction;
+import com.songlam.edu.service.TransactionService;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+import java.math.BigDecimal;
 
 @Controller
 @RequestMapping("/transactions")
 public class TransactionController {
 
-    @GetMapping("/revenues")
-    public String viewRevenues(Model model, Authentication authentication) {
+    private final TransactionService transactionService;
 
-        boolean isAdmin = authentication != null && authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        model.addAttribute("isAdmin", isAdmin);
+    public TransactionController(TransactionService transactionService) {
+        this.transactionService = transactionService;
+    }
+
+    @GetMapping("/revenues")
+    public String viewRevenues(@ModelAttribute TransactionDTO dto, Model model,
+                               @RequestParam(value = "page", required = false) Integer page,
+                               @RequestParam(value = "size", required = false) Integer size) {
+
+        Page<Transaction> revenues = transactionService.search(dto, page, size);
+
+        model.addAttribute("revenues", revenues);
+        model.addAttribute("dto", dto);
         return "revenues";
     }
 
-    @GetMapping("/expenses")
-    public String viewExpenses(Model model, Authentication authentication) {
+    @PostMapping("/revenues")
+    public String createRevenue(Model model, Authentication authentication,
+                                @RequestParam("studentId") String studentId,
+                                @RequestParam("reason") String reason,
+                                @RequestParam("amount") String amountStr) {
+        try {
+            BigDecimal amount = new BigDecimal(amountStr.replaceAll("[.,]", ""));
+            String email = authentication.getName();
+            transactionService.createRevenue(studentId.trim(), reason.trim(), amount, email);
+            return "redirect:/transactions/revenues";
+        } catch (IllegalArgumentException e) {
+            Page<Transaction> revenues = transactionService.search(new TransactionDTO(), null, null);
+            model.addAttribute("revenues", revenues);
+            model.addAttribute("error", e.getMessage());
+            return "revenues";
+        }
+    }
 
-        boolean isAdmin = authentication != null && authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        model.addAttribute("isAdmin", isAdmin);
+    @GetMapping("/revenues/download/{id}")
+    public ResponseEntity<byte[]> downloadRevenuePdf(@PathVariable String id) throws IOException {
+
+        byte[] pdfBytes = transactionService.createPdf(id);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=phieu-thu-" + id + ".pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfBytes);
+    }
+
+    @GetMapping("/revenues/view/{id}")
+    public ResponseEntity<byte[]> viewRevenuePdf(@PathVariable String id) throws IOException {
+
+        byte[] pdfBytes = transactionService.createPdf(id);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "inline; filename=phieu-thu-" + id + ".pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfBytes);
+    }
+
+    @GetMapping("/revenues/detail/{id}")
+    public String viewRevenueDetail(@PathVariable String id, Model model) {
+        Transaction transaction = transactionService.findById(id).orElse(null);
+        model.addAttribute("transaction", transaction);
+        return "revenue-detail";
+    }
+
+    @GetMapping("/expenses")
+    public String viewExpenses() {
         return "expenses";
     }
 }

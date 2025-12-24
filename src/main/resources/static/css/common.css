@@ -1,0 +1,169 @@
+/* Validation feedback */
+.validation-feedback {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+}
+
+.validation-feedback.error {
+    color: #c33;
+}
+
+.validation-feedback.success {
+    color: #3c3;
+}
+
+/* Common Popup Styles - Shared across multiple pages */
+
+.popup-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    animation: fadeIn 0.3s;
+}
+
+.popup-overlay.active {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.popup-content {
+    background: white;
+    border-radius: 8px;
+    padding: 24px;
+    max-width: 600px;
+    width: 90%;
+    min-height: 400px;
+    max-height: 95vh;
+    overflow-y: auto;
+    position: relative;
+    animation: slideIn 0.3s;
+}
+
+.popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #eee;
+}
+
+.popup-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+}
+
+.popup-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+}
+
+.popup-close:hover {
+    background: #f5f5f5;
+    color: #333;
+}
+
+/* Common Search Action Styles */
+.search-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.search-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+/* Common Badge Styles */
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.badge-success {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge-danger {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.badge-blue {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.badge-pink {
+    background: #fce4ec;
+    color: #c2185b;
+}
+
+/* Common Button Styles */
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 13px;
+}
+
+/* Common Pagination Styles */
+.pagination {
+    margin-top: 16px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.page-info {
+    padding: 8px 16px;
+    background: white;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Common Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}

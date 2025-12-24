@@ -2,19 +2,9 @@
     margin-top: 32px;
 }
 
-/* Validation feedback */
-.validation-feedback {
-    display: block;
-    margin-top: 5px;
-    font-size: 12px;
-}
-
-.validation-feedback.error {
-    color: #c33;
-}
-
-.validation-feedback.success {
-    color: #3c3;
+#password-container.editing .info-value {
+    background: white;
+    border-color: var(--border);
 }
 
 .info-grid input.error {

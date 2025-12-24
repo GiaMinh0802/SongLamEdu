@@ -1,6 +1,5 @@
 package com.songlam.edu.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
@@ -31,13 +30,6 @@ public class BusinessInfo {
     @Column(name = "business_type", nullable = false)
     private String businessType;
 
-    @JsonIgnore
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "owner_citizen_id", referencedColumnName = "citizen_id")
-    private Person owner;
-
     @Column(name = "tax_code", length = 20, nullable = false)
     private String taxCode;
 
@@ -61,6 +53,13 @@ public class BusinessInfo {
 
     @Column(name = "website")
     private String website;
+
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId
+    @JoinColumn(name = "citizen_id", referencedColumnName = "citizen_id")
+    private Person person;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

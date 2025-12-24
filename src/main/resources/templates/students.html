@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý học sinh - Song Lâm Edu</title>
     <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/students.css}">
+    <link rel="stylesheet" th:href="@{/css/datepicker.css}">
 </head>
 <body>
 <div th:replace="fragments/header"></div>
@@ -13,13 +16,198 @@
     <main class="app-content">
         <h1 class="page-title-box">🎓 Quản lý học sinh</h1>
 
-        <div id="info-container" class="info-wrap">
+        <div id="info-container" class="info-wrap editing">
 
+            <!-- Tìm kiếm -->
+            <div class="info-section">
+                <h2 class="info-section-title">Tìm kiếm</h2>
+                <form id="searchForm" th:action="@{/students}" method="get" class="info-grid">
+                    <div class="info-label">CCCD</div>
+                    <div>
+                        <input class="info-value" type="text" id="citizenIdInput" name="citizenId" th:value="${citizenId}">
+                    </div>
+
+                    <div class="info-label">Họ và tên</div>
+                    <div>
+                        <input class="info-value" type="text" id="fullNameInput" name="fullName" th:value="${fullName}">
+                    </div>
+
+                    <div class="info-label">Số điện thoại</div>
+                    <div>
+                        <input class="info-value" type="text" id="phoneInput" name="phone" th:value="${phone}" maxlength="10">
+                    </div>
+
+                    <div class="info-label"></div>
+                    <div class="search-actions">
+                        <button type="button" class="btn primary" sec:authorize="hasRole('ADMIN')" onclick="openPopup('addStudentPopup')">➕ Thêm học sinh</button>
+                        <div class="search-buttons">
+                            <button type="submit" class="btn primary">🔎 Tìm kiếm</button>
+                            <button type="button" class="btn" onclick="clearSearchFilters()">❌ Xóa lọc</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Danh sách -->
+            <div class="info-section">
+                <h2 class="info-section-title">Danh sách học sinh</h2>
+                <div style="overflow:auto;">
+                    <table class="student-table">
+                        <thead>
+                        <tr>
+                            <th>CCCD</th>
+                            <th>Họ và tên</th>
+                            <th>Ngày sinh</th>
+                            <th>Giới tính</th>
+                            <th>SĐT</th>
+                            <th>Tình trạng</th>
+                            <th>Thao tác</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="s : ${students}">
+                            <td th:text="${s.getCitizenId()}"></td>
+                            <td th:text="${s.person.getFullName()}"></td>
+                            <td th:text="${s.person.getDateOfBirth() != null ? #temporals.format(s.person.getDateOfBirth(), 'dd/MM/yyyy') : '-'}"></td>
+                            <td>
+                                <span class="badge" th:classappend="${s.person.getSex() == 1 ? 'badge-pink' : 'badge-blue'}" th:text="${s.person.getSex() == 1 ? 'Nữ' : 'Nam'}"></span>
+                            </td>
+                            <td th:text="${s.person.getPhone()}"></td>
+                            <td>
+                            <span class="badge" th:classappend="${s.status} == 1 ? 'badge-success' : 'badge-danger'" th:text="${s.status} == 1 ? 'Đang học' : 'Thôi học'"></span>
+                            </td>
+                            <td class="action">
+                                <button type="button" class="btn btn-sm primary" th:onclick="'window.location.href=\'' + @{/students/detail/{studentId}(studentId=${s.citizenId})} + '\''">Chi tiết</button>
+                                <button type="button" class="btn btn-sm primary" sec:authorize="hasRole('CASHIER')" th:onclick="'window.location.href=\'' + @{'/transactions/revenues'(id=${s.getCitizenId()})} + '\''">Thu học phí</button>
+                            </td>
+                        </tr>
+                        <tr th:if="${students == null || students.totalElements == 0}">
+                            <td colspan="7" class="empty-row">Không có dữ liệu</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </main>
 </div>
 
-<script defer th:src="@{/js/app.js}"></script>
+<div id="addStudentPopup" class="popup-overlay" onclick="closePopupOnOverlay(event, 'addStudentPopup')">
+    <div class="popup-content">
+        <div class="popup-header">
+            <h3 class="popup-title">➕ Thêm học sinh</h3>
+            <button class="popup-close" onclick="closePopup('addStudentPopup')">&times;</button>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div style="display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid #eee;">
+            <button type="button" class="tab-btn active" onclick="switchTab('single')">
+                👤 Thêm đơn lẻ
+            </button>
+            <button type="button" class="tab-btn" onclick="switchTab('bulk')">
+                📊 Nhập hàng loạt
+            </button>
+        </div>
+
+        <!-- Tab Content: Thêm đơn lẻ -->
+        <div id="singleTab" class="tab-content active">
+            <form th:action="@{/students}" method="post" id="addStudentForm">
+
+                <div th:if="${error}" class="alert alert-error" style="margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span th:text="${error}"></span>
+                    </div>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-label required">CCCD</div>
+                    <div>
+                        <input class="info-value" type="text" name="citizenId" id="citizenId" maxlength="15" required>
+                        <small class="note">12 số hoặc định dạng hợp lệ</small>
+                    </div>
+
+                    <div class="info-label required">Họ và tên</div>
+                    <div>
+                        <input class="info-value" type="text" name="fullName" id="fullName" required>
+                    </div>
+
+                    <div class="info-label required">Ngày sinh</div>
+                    <div>
+                        <input type="text"
+                               class="info-value datepicker datepicker-input"
+                               name="dateOfBirth"
+                               id="dateOfBirth"
+                               required />
+                    </div>
+
+                    <div class="info-label required">Giới tính</div>
+                    <div>
+                        <select class="info-value" name="sex" id="sex" required>
+                            <option value="">-- Chọn giới tính --</option>
+                            <option value="0">Nam</option>
+                            <option value="1">Nữ</option>
+                        </select>
+                    </div>
+
+                    <div class="info-label">Địa chỉ</div>
+                    <div>
+                        <textarea class="info-value" name="address" id="address" rows="2"></textarea>
+                    </div>
+
+                    <div class="info-label required">Số điện thoại</div>
+                    <div>
+                        <input class="info-value" type="text" name="phone" id="phone" maxlength="10" required>
+                    </div>
+                </div>
+                <div style="margin-top: 20px; display: flex; gap: 8px; justify-content: flex-end;">
+                    <button type="button" class="btn" onclick="closePopup('addStudentPopup')">Hủy</button>
+                    <button type="submit" class="btn primary">➕ Thêm học sinh</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tab Content: Nhập hàng loạt -->
+        <div id="bulkTab" class="tab-content">
+            <form th:action="@{/students/import}" method="post" enctype="multipart/form-data">
+
+                <div th:if="${importMessage}" class="alert alert-info" style="margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span th:text="${importMessage}"></span>
+                        <a th:if="${hasImportErrors}"
+                           th:href="@{/students/import/errors}"
+                           class="btn btn-sm"
+                           style="margin-left: 12px; white-space: nowrap; text-decoration: none;">
+                            📄 Chi tiết lỗi
+                        </a>
+                    </div>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-label">File mẫu</div>
+                    <div>
+                        <a class="btn" th:href="@{/students/import/template}">⬇️ Tải file mẫu</a>
+                        <small class="note">Tải về file mẫu để biết định dạng đúng</small>
+                    </div>
+
+                    <div class="info-label required">Chọn file Excel</div>
+                    <div>
+                        <input type="file" name="file" accept=".xlsx" required style="width: 100%;">
+                        <small class="note">Tối đa 100 học sinh/lần. Chỉ chấp nhận file .xlsx</small>
+                    </div>
+                </div>
+                <div style="margin-top: 20px; display: flex; gap: 8px; justify-content: flex-end;">
+                    <button type="button" class="btn" onclick="closePopup('addStudentPopup')">Hủy</button>
+                    <button type="submit" class="btn primary">⬆️ Import</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/app.js}"></script>
+<script th:src="@{/js/common.js}"></script>
+<script th:src="@{/js/datepicker.js}"></script>
+<script th:src="@{/js/students.js}"></script>
 
 </body>
 </html>

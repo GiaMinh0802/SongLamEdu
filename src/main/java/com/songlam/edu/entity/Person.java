@@ -32,7 +32,7 @@ public class Person {
     private Short sex; // 0: Male, 1: Female
 
     @Column(name = "nationality", length = 100)
-    private String nationality;
+    private String nationality = "Việt Nam";
 
     @Column(name = "place_of_origin")
     private String placeOfOrigin;
@@ -46,8 +46,16 @@ public class Person {
     @Column(name = "phone", length = 10, nullable = false)
     private String phone;
 
-    @Column(name = "email", unique = true, nullable = false)
+    @Column(name = "email", unique = true)
     private String email;
+
+    @JsonIgnore
+    @OneToOne(mappedBy = "person", cascade = CascadeType.ALL)
+    private User user;
+
+    @JsonIgnore
+    @OneToOne(mappedBy = "person", cascade = CascadeType.ALL)
+    private Student student;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -56,12 +64,4 @@ public class Person {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    @JsonIgnore
-    @OneToOne(mappedBy = "person", cascade = CascadeType.ALL)
-    private User user;
-
-    @JsonIgnore
-    @OneToOne(mappedBy = "student", cascade = CascadeType.ALL)
-    private Student student;
 }

@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý thu - Song Lâm Edu</title>
     <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/datepicker.css}">
+    <link rel="stylesheet" th:href="@{/css/revenues.css}">
 </head>
 <body>
 <div th:replace="fragments/header"></div>
@@ -13,13 +16,133 @@
     <main class="app-content">
         <h1 class="page-title-box">💰 Quản lý thu</h1>
 
-        <div id="info-container" class="info-wrap">
+        <div id="info-container" class="info-wrap editing">
 
+            <!-- Lọc & Danh sách -->
+            <div class="info-section">
+                <h2 class="info-section-title">Tìm kiếm</h2>
+
+                <form id="searchForm" th:action="@{/transactions/revenues}" th:object="${dto}" method="get" class="info-grid">
+                    <div class="info-label">Mã phiếu</div>
+                    <div>
+                        <input class="info-value" type="text" id="codeInput" name="transactionId" th:field="*{transactionId}">
+                    </div>
+
+                    <div class="info-label">Tên học sinh</div>
+                    <div>
+                        <input class="info-value" type="text" id="studentInput" name="studentName" th:field="*{studentName}">
+                    </div>
+
+                    <div class="info-label">Tên thủ quỹ</div>
+                    <div>
+                        <input class="info-value" type="text" id="cashierInput" name="cashierName" th:field="*{cashierName}">
+                    </div>
+
+                    <div class="info-label">Từ ngày</div>
+                    <div>
+                        <input class="info-value datepicker datepicker-input" type="text" id="fromInput" name="dateFrom" th:field="*{dateFrom}" placeholder="dd/MM/yyyy">
+                    </div>
+
+                    <div class="info-label">Đến ngày</div>
+                    <div>
+                        <input class="info-value datepicker datepicker-input" type="text" id="toInput" name="dateTo" th:field="*{dateTo}" placeholder="dd/MM/yyyy">
+                    </div>
+
+                    <div class="info-label"></div>
+                    <div class="search-actions">
+                        <button type="button" class="btn primary" sec:authorize="hasRole('CASHIER')" onclick="openCreateRevenuePopup()">➕ Tạo phiếu thu</button>
+                        <div class="search-buttons">
+                            <button type="submit" class="btn primary">🔎 Tìm kiếm</button>
+                            <button type="button" class="btn" onclick="clearSearchFilters()">❌ Xóa lọc</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Danh sách phiếu thu -->
+            <div class="info-section">
+                <h2 class="info-section-title">Danh sách phiếu thu</h2>
+                <div style="overflow:auto;">
+                    <table class="revenue-table">
+                        <thead>
+                        <tr>
+                            <th>Mã phiếu</th>
+                            <th>Ngày</th>
+                            <th>CCCD</th>
+                            <th>Họ tên</th>
+                            <th class="text-right">Số tiền</th>
+                            <th>Người thu</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="t : ${revenues}">
+                            <td th:text="${t.transactionNumber}"></td>
+                            <td th:text="${t.dateOfRecorded != null ? #temporals.format(t.dateOfRecorded, 'dd/MM/yyyy') : ''}"></td>
+                            <td th:text="${t.student != null ? t.student.citizenId : ''}"></td>
+                            <td th:text="${t.student != null ? t.student.person.fullName : ''}"></td>
+                            <td class="text-right" th:text="${#numbers.formatDecimal(t.amount, 0, 'COMMA', 0, 'POINT')}"></td>
+                            <td th:text="${t.cashier != null ? t.cashier.person.fullName : ''}"></td>
+                            <td>
+                                <span class="badge" th:classappend="${t.isActive} ? 'badge-success' : 'badge-danger'" th:text="${t.isActive} ? 'Hoạt động' : 'Đã hủy'"></span>
+                            </td>
+                            <td class="action">
+                                <button type="button" class="btn btn-sm primary" th:onclick="'window.location.href=\'' + @{/transactions/revenues/detail/{transactionId}(transactionId=${t.transactionNumber})} + '\''">Chi tiết</button>
+                                <button type="button" class="btn btn-sm primary" th:if="${t.isActive}" th:onclick="'window.open(\'' + @{/transactions/revenues/view/{id}(id=${t.transactionNumber})} + '\', \'_blank\')'">Xem phiếu</button>
+                                <button type="button" class="btn btn-sm primary" th:if="${t.isActive}" th:onclick="'window.location.href=\'' + @{/transactions/revenues/download/{id}(id=${t.transactionNumber})} + '\''">Xuất phiếu</button>
+                            </td>
+                        </tr>
+                        <tr th:if="${revenues == null || revenues.totalElements == 0}">
+                            <td colspan="8" class="empty-row">Không có dữ liệu</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </main>
 </div>
 
+<!-- Popup Tạo phiếu thu -->
+<div id="createRevenuePopup" class="popup-overlay" onclick="closePopupOnOverlay(event)">
+    <div class="popup-content">
+        <div class="popup-header">
+            <h3 class="popup-title">➕ Tạo phiếu thu</h3>
+            <button class="popup-close" onclick="closeCreateRevenuePopup()">&times;</button>
+        </div>
+
+        <form th:action="@{/transactions/revenues}" method="post">
+            <div class="info-grid">
+                <div class="info-label required">CCCD học sinh</div>
+                <div>
+                    <input class="info-value" type="text" name="studentId" maxlength="15" required th:value="${param.id}">
+                    <small class="note">Nhập CCCD của học sinh</small>
+                </div>
+
+                <div class="info-label required">Số tiền</div>
+                <div>
+                    <input class="info-value" type="text" id="amountInput" name="amountDisplay" placeholder="VD: 1.000.000" required>
+                    <input type="hidden" name="amount" id="amountHidden">
+                    <small class="note">Nhập số tiền bằng VNĐ</small>
+                </div>
+
+                <div class="info-label required">Lý do nộp</div>
+                <div>
+                    <input class="info-value" type="text" name="reason" placeholder="VD: Học phí tháng 12/2024" required>
+                </div>
+            </div>
+            <div style="margin-top: 20px; display: flex; gap: 8px; justify-content: flex-end;">
+                <button type="button" class="btn" onclick="closeCreateRevenuePopup()">Hủy</button>
+                <button type="submit" class="btn primary">💰 Tạo phiếu thu</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script th:src="@{/js/datepicker.js}"></script>
 <script defer th:src="@{/js/app.js}"></script>
+<script th:src="@{/js/revenues.js}"></script>
 
 </body>
 </html>

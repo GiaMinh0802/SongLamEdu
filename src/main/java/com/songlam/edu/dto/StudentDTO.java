@@ -6,14 +6,12 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDate;
 
 @Data
-public class RegisterDTO {
+public class StudentDTO {
     private String citizenId;
     private String fullName;
     @DateTimeFormat(pattern = "dd/MM/yyyy")
     private LocalDate dateOfBirth;
     private Short sex;
+    private String address;
     private String phone;
-    private String email;
-    private String password;
-    private String confirmPassword;
 }

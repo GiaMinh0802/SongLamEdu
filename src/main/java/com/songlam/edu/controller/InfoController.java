@@ -4,7 +4,6 @@ import com.songlam.edu.dto.BusinessInfoDTO;
 import com.songlam.edu.entity.BusinessInfo;
 import com.songlam.edu.service.CompanyInfoService;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,20 +22,16 @@ public class InfoController {
     }
 
     @GetMapping
-    public String viewInfo(Model model, Authentication authentication) {
+    public String viewInfo(Model model) {
         BusinessInfo info = companyInfoService.getBusinessInfo().orElse(null);
         BusinessInfoDTO dto = companyInfoService.toDTO(info);
         model.addAttribute("info", dto);
-
-        boolean isAdmin = authentication != null && authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        model.addAttribute("isAdmin", isAdmin);
         return "info";
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public String updateInfo(@ModelAttribute("info") BusinessInfoDTO dto) {
+    public String updateInfo(@ModelAttribute BusinessInfoDTO dto) {
         companyInfoService.updateBusinessInfo(dto);
         return "redirect:/info?updated=true";
     }

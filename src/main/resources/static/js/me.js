@@ -1,4 +1,76 @@
 document.addEventListener('DOMContentLoaded', function() {
+  const changeInfoForm = document.getElementById('changeInfoForm');
+  const fullName = document.getElementById('fullName');
+  const dateOfBirth = document.getElementById('dateOfBirth');
+  const sex = document.getElementById('sex');
+  const phone = document.getElementById('phone');
+
+  fullName.addEventListener('blur', function() {
+    if (!validateFullName(this.value)) {
+      addValidationFeedback(this, false, 'Họ và tên chỉ chứa chữ cái và khoảng trắng');
+    } else {
+      removeValidationFeedback(this);
+    }
+  });
+
+  sex.addEventListener('change', function() {
+    if (this.value === '') {
+      addValidationFeedback(this, false, 'Vui lòng chọn giới tính');
+    } else {
+      removeValidationFeedback(this);
+    }
+  });
+
+  phone.addEventListener('blur', function() {
+    if (!validatePhone(this.value)) {
+      addValidationFeedback(this, false, 'Số điện thoại phải có đúng 10 số');
+    } else {
+      removeValidationFeedback(this);
+    }
+  });
+
+  phone.addEventListener('input', function() {
+    this.value = this.value.replace(/\D/g, '');
+  });
+
+  dateOfBirth.addEventListener('change', function() {
+    if (!validateAge(this.value)) {
+      addValidationFeedback(this, false, 'Phải từ 6 tuổi trở lên');
+    } else {
+      removeValidationFeedback(this);
+    }
+  });
+
+  changeInfoForm.addEventListener('submit', function(e) {
+    let isValid = true;
+
+    if (!validateFullName(fullName.value)) {
+      addValidationFeedback(fullName, false, 'Họ và tên không hợp lệ');
+      isValid = false;
+    }
+
+    if (!validateAge(dateOfBirth.value)) {
+      addValidationFeedback(dateOfBirth, false, 'Ngày sinh không hợp lệ');
+      isValid = false;
+    }
+
+    if (!validatePhone(phone.value)) {
+      addValidationFeedback(phone, false, 'Số điện thoại không hợp lệ');
+      isValid = false;
+    }
+
+    if (!isValid) {
+      e.preventDefault();
+      const firstError = document.querySelector('.error');
+      if (firstError) {
+        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    } else {
+      const submitBtn = changeInfoForm.querySelector('.btn-edit');
+      submitBtn.disabled = true;
+    }
+  });
+
   const changePasswordForm = document.getElementById('changePasswordForm');
   const oldPassword = document.getElementById('oldPassword');
   const newPassword = document.getElementById('newPassword');
@@ -17,42 +89,6 @@ document.addEventListener('DOMContentLoaded', function() {
       behavior: 'smooth',
       block: 'center'
     });
-  }
-
-  function validatePassword(password) {
-    // Min 8 chars, at least one uppercase, one lowercase, one number
-    const re = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-    return re.test(password);
-  }
-
-  // Add validation feedback
-  function addValidationFeedback(input, isValid, message) {
-    const formGroup = input.parentElement;
-    let feedback = formGroup.querySelector('.validation-feedback');
-
-    if (!feedback) {
-      feedback = document.createElement('small');
-      feedback.className = 'validation-feedback';
-      formGroup.appendChild(feedback);
-    }
-
-    feedback.textContent = message;
-    feedback.className = isValid ? 'validation-feedback success' : 'validation-feedback error';
-    // Preserve existing classes (e.g., info-value) and only toggle validation states
-    input.classList.remove('error', 'success');
-    input.classList.add(isValid ? 'success' : 'error');
-  }
-
-  function removeValidationFeedback(input) {
-    const formGroup = input.parentElement;
-    const feedback = formGroup.querySelector('.validation-feedback');
-    const hint = formGroup.querySelector('.hint');
-
-    if (feedback) {
-      feedback.remove();
-    }
-    // Only remove validation state, keep other classes
-    input.classList.remove('error', 'success');
   }
 
   changePasswordForm.addEventListener('submit', function (e) {
@@ -92,7 +128,6 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
       const submitBtn = changePasswordForm.querySelector('.btn-edit');
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Đang xử lý...';
     }
   })
 })

@@ -19,14 +19,8 @@ import java.util.List;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "email", referencedColumnName = "email", nullable = false)
-    private Person person;
+    @Column(name = "citizen_id", length = 15)
+    private String citizenId;
 
     @JsonIgnore
     @ToString.Exclude
@@ -38,7 +32,20 @@ public class User {
     private Short role = 0; // 0: Cashier, 1: Admin
 
     @Column(name = "is_active")
-    private Boolean isActive = true;
+    private Boolean isActive = false;
+
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @OneToOne(fetch = FetchType.LAZY)
+    @MapsId
+    @JoinColumn(name = "citizen_id", referencedColumnName = "citizen_id")
+    private Person person;
+
+    @JsonIgnore
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @OneToMany(mappedBy = "cashier", cascade = CascadeType.ALL)
+    private List<Transaction> transactions;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -47,10 +54,4 @@ public class User {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    @JsonIgnore
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    @OneToMany(mappedBy = "cashier", cascade = CascadeType.ALL)
-    private List<Transaction> transactions;
 }
