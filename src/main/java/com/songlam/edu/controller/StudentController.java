@@ -86,8 +86,9 @@ public class StudentController {
 
         if (res.hasErrors()) {
             session.setAttribute("importErrors", res.getErrorsAsText());
+            model.addAttribute("hasImportErrors", true);
         }
-        model.addAttribute("hasImportErrors", true);
+
         String importMessage = String.format(
                 "Kết quả import: Thành công %d học sinh, Thất bại %d học sinh.",
                 res.getSuccess(),

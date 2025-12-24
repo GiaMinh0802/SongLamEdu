@@ -57,7 +57,6 @@ public class BusinessInfo {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId
     @JoinColumn(name = "citizen_id", referencedColumnName = "citizen_id")
     private Person person;
 
