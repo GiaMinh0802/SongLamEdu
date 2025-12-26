@@ -24,6 +24,7 @@ public interface UserRepository extends JpaRepository<User, String> {
         WHERE (:citizenId IS NULL OR p.citizen_id LIKE CONCAT('%', :citizenId, '%'))
           AND (:fullName IS NULL OR LOWER(p.full_name) LIKE LOWER(CONCAT('%', :fullName, '%')))
           AND (:phone IS NULL OR p.phone LIKE CONCAT('%', :phone, '%'))
+          AND (u.role = 0)
         ORDER BY u.updated_at DESC
         """, nativeQuery = true)
     Page<User> search(

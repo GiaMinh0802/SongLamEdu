@@ -3,6 +3,7 @@ package com.songlam.edu.security;
 import com.songlam.edu.entity.User;
 import com.songlam.edu.exception.AccountNotActivatedException;
 import com.songlam.edu.repository.UserRepository;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,7 +26,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+    public @NullMarked UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByPersonEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng với email: " + email));
 
