@@ -72,6 +72,31 @@ public class StudentService {
         studentRepository.save(student);
     }
 
+    public void updateStudent(StudentDTO dto) {
+        Student student = studentRepository.findById(dto.getCitizenId()).orElseGet(Student::new);
+        student.setStatus(dto.getStatus());
+        if (dto.getStatus() == 1) {
+            student.setEndDate(null);
+        } else {
+            student.setEndDate(dto.getEndDate());
+        }
+
+        Person person = student.getPerson();
+        person.setFullName(dto.getFullName());
+        person.setDateOfBirth(dto.getDateOfBirth());
+        person.setSex(dto.getSex());
+        person.setNationality(dto.getNationality());
+        person.setPlaceOfOrigin(dto.getPlaceOfOrigin());
+        person.setPlaceOfResidence(dto.getPlaceOfResidence());
+        person.setAddress(dto.getAddress());
+        person.setPhone(dto.getPhone());
+        if (!dto.getEmail().isEmpty()) person.setEmail(dto.getEmail());
+
+        student.setPerson(person);
+
+        studentRepository.save(student);
+    }
+
     public ImportResultDTO importStudents(MultipartFile file) {
         ImportResultDTO result = new ImportResultDTO();
         if (file == null || file.isEmpty()) {
@@ -153,6 +178,28 @@ public class StudentService {
         return result;
     }
 
+    public StudentDTO toDTO(Student student) {
+        StudentDTO dto = new StudentDTO();
+        if (student == null) return dto;
+        Person person = student.getPerson();
+        if (person != null) {
+            dto.setCitizenId(person.getCitizenId());
+            dto.setFullName(person.getFullName());
+            dto.setDateOfBirth(person.getDateOfBirth());
+            dto.setSex(person.getSex());
+            dto.setNationality(person.getNationality());
+            dto.setPlaceOfOrigin(person.getPlaceOfOrigin());
+            dto.setPlaceOfResidence(person.getPlaceOfResidence());
+            dto.setAddress(person.getAddress());
+            dto.setPhone(person.getPhone());
+            dto.setEmail(person.getEmail());
+        }
+        dto.setStatus(student.getStatus());
+        dto.setStartDate(student.getStartDate());
+        dto.setEndDate(student.getEndDate());
+        return dto;
+    }
+
     private static String getString(Row row, int col) {
         Cell cell = row.getCell(col);
         if (cell == null) return null;
@@ -167,7 +214,7 @@ public class StudentService {
         return value != null ? value.toLocalDate() : null;
     }
 
-    public  static Short getSex(Row row, int col) {
+    public static Short getSex(Row row, int col) {
         Cell cell = row.getCell(col);
         if (cell == null) return null;
         String value = cell.getStringCellValue();

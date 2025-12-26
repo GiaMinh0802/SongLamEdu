@@ -653,6 +653,10 @@ html, body {
   color: #d1d5db;
 }
 
+.info-grid input.error {
+  border-color: #c33;
+}
+
 /* Edit Mode Input Styling */
 #info-container.editing .info-value {
   background: white;

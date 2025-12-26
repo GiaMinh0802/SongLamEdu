@@ -23,7 +23,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const sex = document.getElementById('sex');
     const phone = document.getElementById('phone');
 
-    // CCCD validation
     citizenId.addEventListener('blur', function() {
         if (this.value.trim() === '') {
             addValidationFeedback(this, false, 'CCCD không được để trống');

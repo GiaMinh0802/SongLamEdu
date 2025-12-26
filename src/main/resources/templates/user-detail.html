@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý học sinh - Song Lâm Edu</title>
+    <title>Quản lý người dùng - Song Lâm Edu</title>
     <link rel="stylesheet" th:href="@{/css/app.css}">
     <link rel="stylesheet" th:href="@{/css/common.css}">
     <link rel="stylesheet" th:href="@{/css/datepicker.css}">
@@ -13,11 +13,11 @@
 <div class="app-shell">
     <div th:replace="fragments/sidebar"></div>
     <main class="app-content">
-        <h1 class="page-title-box">🎓 Quản lý học sinh</h1>
+        <h1 class="page-title-box">👥 Quản lý người dùng</h1>
 
         <div id="info-container" class="info-wrap">
 
-            <button type="button" class="btn btn-back" onclick="window.location.href = '/students'">
+            <button type="button" class="btn btn-back" onclick="window.location.href = '/users'">
                 ⬅️ Back
             </button>
 
@@ -25,7 +25,7 @@
                 ✅ Cập nhật thông tin thành công.
             </div>
 
-            <form th:action="@{/students/detail}" th:object="${student}" method="post" id="changeInfoForm">
+            <form th:action="@{/users/detail}" th:object="${user}" method="post" id="changeInfoForm">
 
                 <div class="info-section">
                     <h2 class="info-section-title">Thông tin cơ bản</h2>
@@ -46,12 +46,12 @@
                         <div class="info-label required">Ngày sinh:</div>
                         <div>
                             <div class="info-value" data-view
-                                 th:text="${student.dateOfBirth != null ? #temporals.format(student.dateOfBirth, 'dd/MM/yyyy') : '-'}">
+                                 th:text="${user.dateOfBirth != null ? #temporals.format(user.dateOfBirth, 'dd/MM/yyyy') : '-'}">
                             </div>
                             <input data-edit type="text"
                                    class="info-value hidden datepicker-edit datepicker-input"
                                    id="dateOfBirth"
-                                   th:value="${#temporals.format(student.dateOfBirth, 'dd/MM/yyyy')}"
+                                   th:value="${#temporals.format(user.dateOfBirth, 'dd/MM/yyyy')}"
                                    name="dateOfBirth"
                                    required />
                         </div>
@@ -103,46 +103,8 @@
                         <div class="info-label">Email:</div>
                         <div>
                             <div class="info-value" data-view th:text="*{email}">-</div>
-                            <input data-edit class="info-value hidden" type="email" th:field="*{email}" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="info-section">
-                    <h2 class="info-section-title">Tình trạng học</h2>
-                    <div class="info-grid">
-                        <div class="info-label">Tình trạng:</div>
-                        <div>
-                            <div class="info-value" data-view th:text="*{status} == 1 ? 'Đang học' : 'Thôi học'">-</div>
-                            <select data-edit class="info-value hidden" id="status" th:field="*{status}" required>
-                                <option value="1">Còn học</option>
-                                <option value="0">Thôi học</option>
-                            </select>
-                        </div>
-
-                        <div class="info-label">Ngày nhập học:</div>
-                        <div>
-                            <div class="info-value" data-view
-                                 th:text="${student.startDate != null ? #temporals.format(student.startDate, 'dd/MM/yyyy') : '-'}">
-                            </div>
-                            <input data-edit type="text"
-                                   class="info-value hidden"
-                                   id="startDate"
-                                   th:value="${#temporals.format(student.startDate, 'dd/MM/yyyy')}"
-                                   name="startDate"
-                                   readonly style="background: #f3f4f6; cursor: not-allowed;" />
-                        </div>
-
-                        <div class="info-label">Ngày thôi học:</div>
-                        <div>
-                            <div class="info-value" data-view
-                                 th:text="${student.endDate != null ? #temporals.format(student.endDate, 'dd/MM/yyyy') : ''}">
-                            </div>
-                            <input data-edit type="text"
-                                   class="info-value hidden datepicker-edit datepicker-input"
-                                   id="endDate"
-                                   th:value="${student.endDate != null ? #temporals.format(student.endDate, 'dd/MM/yyyy') : ''}"
-                                   name="endDate" />
+                            <input data-edit class="info-value hidden" type="email" th:field="*{email}" readonly style="background: #f3f4f6; cursor: not-allowed;" />
+                            <small data-edit class="note">⚠️ Email dùng cho đăng nhập, không thể thay đổi tại đây</small>
                         </div>
                     </div>
                 </div>
@@ -167,7 +129,7 @@
 <script th:src="@{/js/app.js}"></script>
 <script th:src="@{/js/common.js}"></script>
 <script th:src="@{/js/datepicker.js}"></script>
-<script th:src="@{/js/student-detail.js}"></script>
+<script th:src="@{/js/user-detail.js}"></script>
 <script th:if="${param.updated}">
     setTimeout(() => {
         window.location.href = window.location.href.replace("?updated=true", "");

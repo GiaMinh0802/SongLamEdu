@@ -86,26 +86,15 @@ public class TransactionService {
         transactionRepository.save(tx);
     }
 
-    @Transactional
-    public Transaction updateRevenue(String transactionNumber, String reason, BigDecimal amount, LocalDate date) {
-        Transaction tx = transactionRepository.findById(transactionNumber)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phiếu thu " + transactionNumber));
-        tx.setReason(reason);
-        tx.setAmount(amount);
-        tx.setDateOfRecorded(date);
-        tx.setDateOfDocument(date);
-        return transactionRepository.save(tx);
-    }
-
-    @Transactional
-    public Transaction cancelRevenue(String transactionNumber, String note) {
-        if (note == null || note.trim().isEmpty()) {
-            throw new IllegalArgumentException("Lý do hủy (note) không được để trống");
-        }
-        Transaction tx = transactionRepository.findById(transactionNumber)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phiếu thu " + transactionNumber));
-        tx.setNote(note);
-        return transactionRepository.save(tx);
+    public void updateRevenue(TransactionDTO dto) {
+        Transaction tx = transactionRepository.findById(dto.getTransactionId()).orElseGet(Transaction::new);
+        tx.setReason(dto.getReason());
+        tx.setAmount(new BigDecimal(dto.getAmountHidden()));
+        tx.setAttachments(dto.getAttachments());
+        tx.setSourceDocuments(dto.getSourceDocuments());
+        tx.setNote(dto.getNote());
+        tx.setIsActive(dto.getStatus().equals("1"));
+        transactionRepository.save(tx);
     }
 
     public byte[] createPdf(String transactionNumber) throws IOException {
@@ -152,6 +141,22 @@ public class TransactionService {
         if (val instanceof Number n) seq = n.longValue();
         else seq = Long.parseLong(val.toString());
         return "PT" + String.format("%06d", seq);
+    }
+
+    public TransactionDTO toDTO(Transaction tx) {
+        TransactionDTO dto = new TransactionDTO();
+        dto.setTransactionId(tx.getTransactionNumber());
+        dto.setStudentName(tx.getStudent().getPerson().getFullName());
+        dto.setCashierName(tx.getCashier().getPerson().getFullName());
+        dto.setDateOfRecorded(tx.getDateOfRecorded());
+        dto.setDateOfDocument(tx.getDateOfDocument());
+        dto.setReason(tx.getReason());
+        dto.setAmount(tx.getAmount().stripTrailingZeros().toPlainString());
+        dto.setAttachments(tx.getAttachments());
+        dto.setSourceDocuments(tx.getSourceDocuments());
+        dto.setNote(tx.getNote());
+        dto.setStatus(tx.getIsActive() ? "1" : "0");
+        return dto;
     }
 
     private static String emptyToNull(String s) {

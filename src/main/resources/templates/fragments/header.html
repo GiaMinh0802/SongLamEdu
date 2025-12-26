@@ -8,7 +8,8 @@
     <div class="header-right">
         <div class="user-info">
             <a th:href="@{/me}" class="avatar-link">
-                <img class="avatar" th:src="@{/images/default-avatar.svg}" alt="avatar">
+                <img class="avatar" sec:authorize="hasRole('ADMIN')" th:src="@{/images/admin-avatar.svg}" alt="avatar">
+                <img class="avatar" sec:authorize="hasRole('CASHIER')" th:src="@{/images/cashier-avatar.svg}" alt="avatar">
             </a>
             <div class="user-meta">
                 <div class="user-name" sec:authentication="principal.fullName"></div>

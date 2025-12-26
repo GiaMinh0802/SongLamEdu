@@ -1,6 +1,6 @@
 package com.songlam.edu.service;
 
-import com.songlam.edu.dto.MeDTO;
+import com.songlam.edu.dto.PersonDTO;
 import com.songlam.edu.dto.RegisterDTO;
 import com.songlam.edu.entity.Person;
 import com.songlam.edu.entity.User;
@@ -28,6 +28,10 @@ public class UserService {
 
     public Optional<User> findByEmail(String email) {
         return userRepository.findByPersonEmail(email);
+    }
+
+    public Optional<User> findById(String citizenId) {
+        return userRepository.findById(citizenId);
     }
 
     public Page<User> search(String citizenId, String fullName, String phone, Integer page, Integer size) {
@@ -81,8 +85,8 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public MeDTO toDTOForMe(User user) {
-        MeDTO dto = new MeDTO();
+    public PersonDTO toDTO(User user) {
+        PersonDTO dto = new PersonDTO();
         if (user == null) return dto;
         Person person = user.getPerson();
         if (person != null) {

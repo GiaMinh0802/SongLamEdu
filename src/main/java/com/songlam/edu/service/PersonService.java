@@ -1,6 +1,6 @@
 package com.songlam.edu.service;
 
-import com.songlam.edu.dto.MeDTO;
+import com.songlam.edu.dto.PersonDTO;
 import com.songlam.edu.entity.Person;
 import com.songlam.edu.repository.PersonRepository;
 import org.springframework.stereotype.Service;
@@ -16,7 +16,7 @@ public class PersonService {
     }
 
     @Transactional
-    public void updateMeInfo(MeDTO dto) {
+    public void updateInfo(PersonDTO dto) {
         Person person = personRepository.findByEmail(dto.getEmail()).orElseGet(Person::new);
 
         person.setFullName(dto.getFullName());

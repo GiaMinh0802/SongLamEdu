@@ -43,10 +43,6 @@ function clearSearchFilters() {
     document.getElementById('cashierInput').value = '';
     document.getElementById('fromInput').value = '';
     document.getElementById('toInput').value = '';
-    const cashierInput = document.getElementById('cashierEmailInput');
-    if (cashierInput) {
-        cashierInput.value = '';
-    }
 }
 
 document.addEventListener('keydown', function(event) {

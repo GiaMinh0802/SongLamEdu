@@ -78,8 +78,8 @@
                             <span class="badge" th:classappend="${s.status} == 1 ? 'badge-success' : 'badge-danger'" th:text="${s.status} == 1 ? 'Đang học' : 'Thôi học'"></span>
                             </td>
                             <td class="action">
-                                <button type="button" class="btn btn-sm primary" th:onclick="|window.location.href='@{/students/detail/{studentId}(studentId=${s.citizenId})}'|">Chi tiết</button>
-                                <button type="button" class="btn btn-sm primary" sec:authorize="hasRole('CASHIER')" th:onclick="|window.location.href='@{/transactions/revenues(id=${s.citizenId})}'|">Thu học phí</button>
+                                <button type="button" class="btn btn-sm primary" th:onclick="|window.location.href='@{/students/detail/{id}(id=${s.citizenId})}'|">Chi tiết</button>
+                                <button type="button" class="btn btn-sm primary" sec:authorize="hasRole('CASHIER')" th:if="${s.status} == 1" th:onclick="|window.location.href='@{/transactions/revenues(id=${s.citizenId})}'|">Thu học phí</button>
                             </td>
                         </tr>
                         <tr th:if="${students == null || students.totalElements == 0}">

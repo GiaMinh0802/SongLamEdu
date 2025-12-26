@@ -82,8 +82,15 @@ public class TransactionController {
     @GetMapping("/revenues/detail/{id}")
     public String viewRevenueDetail(@PathVariable String id, Model model) {
         Transaction transaction = transactionService.findById(id).orElse(null);
-        model.addAttribute("transaction", transaction);
+        TransactionDTO dto = transactionService.toDTO(transaction);
+        model.addAttribute("transaction", dto);
         return "revenue-detail";
+    }
+
+    @PostMapping("/revenues/detail")
+    public String updateRevenue(@ModelAttribute TransactionDTO dto) {
+        transactionService.updateRevenue(dto);
+        return "redirect:/transactions/revenues/detail/" + dto.getTransactionId() + "?updated=true";
     }
 
     @GetMapping("/expenses")

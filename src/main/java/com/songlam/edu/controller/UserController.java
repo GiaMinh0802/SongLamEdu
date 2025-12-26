@@ -1,6 +1,8 @@
 package com.songlam.edu.controller;
 
+import com.songlam.edu.dto.PersonDTO;
 import com.songlam.edu.entity.User;
+import com.songlam.edu.service.PersonService;
 import com.songlam.edu.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
@@ -13,8 +15,11 @@ public class UserController {
 
     private final UserService userService;
 
-    public UserController(UserService userService) {
+    private final PersonService personService;
+
+    public UserController(UserService userService, PersonService personService) {
         this.userService = userService;
+        this.personService = personService;
     }
 
     @GetMapping
@@ -34,9 +39,23 @@ public class UserController {
         return "users";
     }
 
-    @GetMapping("/active/{userId}")
-    public String activeUser(@PathVariable String userId) {
-        userService.activeUser(userId);
+    @GetMapping("/active/{id}")
+    public String activeUser(@PathVariable String id) {
+        userService.activeUser(id);
         return "redirect:/users?active=true";
+    }
+
+    @GetMapping("/detail/{id}")
+    public String viewDetail(@PathVariable String id, Model model) {
+        User user = userService.findById(id).orElse(null);
+        PersonDTO dto = userService.toDTO(user);
+        model.addAttribute("user", dto);
+        return "user-detail";
+    }
+
+    @PostMapping("/detail")
+    public String updateUser(@ModelAttribute PersonDTO dto) {
+        personService.updateInfo(dto);
+        return "redirect:/users/detail/" + dto.getCitizenId() + "?updated=true";
     }
 }

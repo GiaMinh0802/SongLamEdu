@@ -128,7 +128,14 @@ public class StudentController {
     @GetMapping("/detail/{id}")
     public String viewDetail(@PathVariable String id, Model model) {
         Student student = studentService.findById(id).orElse(null);
-        model.addAttribute("student", student);
+        StudentDTO dto = studentService.toDTO(student);
+        model.addAttribute("student", dto);
         return "student-detail";
+    }
+
+    @PostMapping("/detail")
+    public String updateStudent(@ModelAttribute StudentDTO dto) {
+        studentService.updateStudent(dto);
+        return "redirect:/students/detail/" + dto.getCitizenId() + "?updated=true";
     }
 }

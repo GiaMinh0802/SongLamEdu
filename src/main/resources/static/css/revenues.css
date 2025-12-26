@@ -23,7 +23,7 @@
 }
 
 .revenue-table th.text-right {
-    text-align: right;
+    text-align: center;
 }
 
 .revenue-table tbody tr {
@@ -47,8 +47,7 @@
     color: #333;
 }
 
-.revenue-table td.text-right {
-    text-align: right;
+.revenue-table td.text-money {
     font-weight: 600;
     color: #11998e;
 }
@@ -58,6 +57,28 @@
     padding: 32px;
     color: #999;
     font-style: italic;
+}
+
+/* Unactive row */
+.revenue-table tbody tr.unactive {
+    background: #f5f5f5;
+    color: #999;
+}
+
+.revenue-table tbody tr.unactive td {
+    color: #999;
+}
+
+.revenue-table tbody tr.unactive:hover {
+    background: #f5f5f5;
+    transform: none;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.revenue-table tbody tr.unactive td.text-right {
+    color: #aaa;
+    font-weight: 500;
 }
 
 /* Cancel form inline */

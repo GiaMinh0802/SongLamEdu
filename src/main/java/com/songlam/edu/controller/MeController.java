@@ -1,7 +1,7 @@
 package com.songlam.edu.controller;
 
 import com.songlam.edu.dto.ChangePasswordDTO;
-import com.songlam.edu.dto.MeDTO;
+import com.songlam.edu.dto.PersonDTO;
 import com.songlam.edu.entity.User;
 import com.songlam.edu.service.PersonService;
 import com.songlam.edu.service.UserService;
@@ -29,14 +29,14 @@ public class MeController {
     @GetMapping
     public String viewMe(Model model, Authentication authentication) {
         User user = userService.findByEmail(authentication.getName()).orElse(null);
-        MeDTO dto = userService.toDTOForMe(user);
+        PersonDTO dto = userService.toDTO(user);
         model.addAttribute("me", dto);
         return "me";
     }
 
     @PostMapping
-    public String updateMe(@ModelAttribute MeDTO dto) {
-        personService.updateMeInfo(dto);
+    public String updateMe(@ModelAttribute PersonDTO dto) {
+        personService.updateInfo(dto);
         return "redirect:/me?updated=true";
     }
 

@@ -14,4 +14,15 @@ public class TransactionDTO {
     private LocalDate dateFrom;
     @DateTimeFormat(pattern = "dd/MM/yyyy")
     private LocalDate dateTo;
+    @DateTimeFormat(pattern = "dd/MM/yyyy")
+    private LocalDate dateOfRecorded;
+    @DateTimeFormat(pattern = "dd/MM/yyyy")
+    private LocalDate dateOfDocument;
+    private String reason;
+    private String amount;
+    private String amountHidden;
+    private String attachments;
+    private String sourceDocuments;
+    private String note;
+    private String status;
 }

@@ -6,7 +6,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDate;
 
 @Data
-public class MeDTO {
+public class PersonDTO {
     private String citizenId;
     private String fullName;
     @DateTimeFormat(pattern = "dd/MM/yyyy")

@@ -66,34 +66,28 @@
                         <thead>
                         <tr>
                             <th>Mã phiếu</th>
-                            <th>Ngày</th>
-                            <th>CCCD</th>
+                            <th>Ngày thu</th>
                             <th>Họ tên</th>
-                            <th class="text-right">Số tiền</th>
+                            <th>Số tiền</th>
                             <th>Người thu</th>
-                            <th>Trạng thái</th>
                             <th>Thao tác</th>
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="t : ${revenues}">
+                        <tr th:classappend="${!t.isActive} ? 'unactive'" th:each="t : ${revenues}">
                             <td th:text="${t.transactionNumber}"></td>
                             <td th:text="${t.dateOfRecorded != null ? #temporals.format(t.dateOfRecorded, 'dd/MM/yyyy') : ''}"></td>
-                            <td th:text="${t.student != null ? t.student.citizenId : ''}"></td>
                             <td th:text="${t.student != null ? t.student.person.fullName : ''}"></td>
-                            <td class="text-right" th:text="${#numbers.formatDecimal(t.amount, 0, 'COMMA', 0, 'POINT')}"></td>
+                            <td class="text-money" th:text="${#numbers.formatDecimal(t.amount, 0, 'COMMA', 0, 'POINT')}"></td>
                             <td th:text="${t.cashier != null ? t.cashier.person.fullName : ''}"></td>
-                            <td>
-                                <span class="badge" th:classappend="${t.isActive} ? 'badge-success' : 'badge-danger'" th:text="${t.isActive} ? 'Hoạt động' : 'Đã hủy'"></span>
-                            </td>
                             <td class="action">
-                                <button type="button" class="btn btn-sm primary" th:onclick="|window.location.href='@{/transactions/revenues/detail/{transactionId}(transactionId=${t.transactionNumber})}'|">Chi tiết</button>
+                                <button type="button" class="btn btn-sm primary" th:onclick="|window.location.href='@{/transactions/revenues/detail/{id}(id=${t.transactionNumber})}'|">Chi tiết</button>
                                 <button type="button" class="btn btn-sm primary" th:if="${t.isActive}" th:onclick="|window.open('@{/transactions/revenues/view/{id}(id=${t.transactionNumber})}', '_blank')|">Xem phiếu</button>
                                 <button type="button" class="btn btn-sm primary" th:if="${t.isActive}" th:onclick="|window.location.href='@{/transactions/revenues/download/{id}(id=${t.transactionNumber})}'|">Xuất phiếu</button>
                             </td>
                         </tr>
                         <tr th:if="${revenues == null || revenues.totalElements == 0}">
-                            <td colspan="8" class="empty-row">Không có dữ liệu</td>
+                            <td colspan="6" class="empty-row">Không có dữ liệu</td>
                         </tr>
                         </tbody>
                     </table>

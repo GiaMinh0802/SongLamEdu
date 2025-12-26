@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
   const changeInfoForm = document.getElementById('changeInfoForm');
   const fullName = document.getElementById('fullName');
-  const dateOfBirth = document.getElementById('dateOfBirth');
   const sex = document.getElementById('sex');
   const phone = document.getElementById('phone');
 
@@ -33,24 +32,11 @@ document.addEventListener('DOMContentLoaded', function() {
     this.value = this.value.replace(/\D/g, '');
   });
 
-  dateOfBirth.addEventListener('change', function() {
-    if (!validateAge(this.value)) {
-      addValidationFeedback(this, false, 'Phải từ 6 tuổi trở lên');
-    } else {
-      removeValidationFeedback(this);
-    }
-  });
-
   changeInfoForm.addEventListener('submit', function(e) {
     let isValid = true;
 
     if (!validateFullName(fullName.value)) {
       addValidationFeedback(fullName, false, 'Họ và tên không hợp lệ');
-      isValid = false;
-    }
-
-    if (!validateAge(dateOfBirth.value)) {
-      addValidationFeedback(dateOfBirth, false, 'Ngày sinh không hợp lệ');
       isValid = false;
     }
 

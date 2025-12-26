@@ -97,7 +97,6 @@
                         <div>
                             <div class="info-value" data-view th:text="*{phone}">-</div>
                             <input data-edit class="info-value hidden" id="phone" type="text" th:field="*{phone}" maxlength="10" />
-                            <small data-edit class="note">Số điện thoại 10 chữ số</small>
                         </div>
 
                         <div class="info-label">Email:</div>
@@ -121,9 +120,6 @@
                         ✖️ Hủy
                     </button>
                 </div>
-
-                <!-- Hidden citizen id to preserve value on submit -->
-                <input type="hidden" th:field="*{citizenId}" />
             </form>
         </div>
 
