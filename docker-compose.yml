@@ -7,7 +7,7 @@ services:
     ports:
       - "${SERVER_PORT:-8080}:8080"
     environment:
-      - SERVER_PORT=${SERVER_PORT:-8080}
+      - PORT=${SERVER_PORT:-8080}
       - SESSION_TIMEOUT=${SESSION_TIMEOUT:-30m}
       - DB_HOST=postgres
       - DB_PORT=5432

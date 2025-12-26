@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI/CD Pipeline with Render
 
 on:
   push:
@@ -8,8 +8,6 @@ on:
 
 env:
   JAVA_VERSION: '21'
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   # ==================== BUILD & TEST ====================
@@ -58,11 +56,12 @@ jobs:
           DB_PASSWORD: testpass
         run: ./gradlew test
 
-      - name: Upload build artifacts
+      - name: Upload test results
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: app-jar
-          path: build/libs/*.jar
+          name: test-results
+          path: build/test-results/test/*.xml
           retention-days: 7
 
   # ==================== CODE QUALITY ====================
@@ -85,87 +84,60 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Run Checkstyle (optional)
+      - name: Run Checkstyle
         run: ./gradlew check || true
         continue-on-error: true
 
-  # ==================== BUILD DOCKER IMAGE ====================
-  docker:
-    name: Build & Push Docker Image
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-
-    permissions:
-      contents: read
-      packages: write
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: app-jar
-          path: build/libs
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch
-            type=sha,prefix=
-            type=raw,value=latest,enable={{is_default_branch}}
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-  # ==================== DEPLOY TO STAGING ====================
+  # ==================== DEPLOY TO STAGING (Render) ====================
   deploy-staging:
-    name: Deploy to Staging
+    name: Deploy to Staging (Render)
     runs-on: ubuntu-latest
-    needs: docker
-    if: github.ref == 'refs/heads/main'
+    needs: [build, code-quality]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     environment: staging
 
     steps:
-      - name: Deploy to staging server
+      - name: Deploy to Render Staging
         run: |
-          echo "Deploying to staging environment..."
-          # Thêm script deploy của bạn ở đây
-          # Ví dụ: SSH vào server và pull image mới
-          # ssh user@staging-server "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest && docker-compose up -d"
+          echo "Triggering Render staging deployment..."
+          curl -X POST "${{ secrets.RENDER_STAGING_DEPLOY_HOOK }}"
 
-  # ==================== DEPLOY TO PRODUCTION ====================
+      - name: Wait for deployment
+        run: |
+          echo "Waiting for deployment to complete..."
+          sleep 30
+
+      - name: Health check
+        run: |
+          echo "Checking staging health..."
+          curl -f ${{ secrets.RENDER_STAGING_URL }}/actuator/health || echo "Health check failed"
+
+  # ==================== DEPLOY TO PRODUCTION (Render) ====================
   deploy-production:
-    name: Deploy to Production
+    name: Deploy to Production (Render)
     runs-on: ubuntu-latest
-    needs: deploy-staging
-    if: github.ref == 'refs/heads/main'
+    needs: [build, code-quality]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment: production
 
     steps:
-      - name: Deploy to production server
+      - name: Deploy to Render Production
         run: |
-          echo "Deploying to production environment..."
-          # Thêm script deploy production ở đây
+          echo "Triggering Render production deployment..."
+          curl -X POST "${{ secrets.RENDER_PRODUCTION_DEPLOY_HOOK }}"
+
+      - name: Wait for deployment
+        run: |
+          echo "Waiting for deployment to complete..."
+          sleep 60
+
+      - name: Health check
+        run: |
+          echo "Checking production health..."
+          curl -f ${{ secrets.RENDER_PRODUCTION_URL }}/actuator/health || echo "Health check failed"
+
+      - name: Deployment notification
+        if: success()
+        run: |
+          echo "✅ Production deployment successful!"
+          echo "URL: ${{ secrets.RENDER_PRODUCTION_URL }}"
