@@ -6,6 +6,10 @@ import com.songlam.edu.entity.Person;
 import com.songlam.edu.entity.User;
 import com.songlam.edu.repository.PersonRepository;
 import com.songlam.edu.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,20 +17,25 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
     private final PersonRepository personRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, PersonRepository personRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.personRepository = personRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
+    private static final int DEFAULT_PAGE_SIZE = 20;
 
     public Optional<User> findByEmail(String email) {
         return userRepository.findByPersonEmail(email);
+    }
+
+    public Page<User> search(String citizenId, String fullName, String phone, Integer page, Integer size) {
+        Pageable pageable = PageRequest.of(page == null || page < 0 ? 0 : page, size == null || size <= 0 ? DEFAULT_PAGE_SIZE : size);
+        return  userRepository.search(emptyToNull(citizenId),
+                                    emptyToNull(fullName),
+                                    emptyToNull(phone),
+                                    pageable);
     }
 
     public boolean checkMatchPassword(String oldPassword, String encodedPassword) {
@@ -37,6 +46,14 @@ public class UserService {
     public void updatePassword(User user, String newPassword) {
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
+    }
+
+    public void activeUser(String citizenId) {
+        User user = userRepository.findById(citizenId).orElse(null);
+        if (user != null) {
+            user.setIsActive(true);
+            userRepository.save(user);
+        }
     }
 
     public void registerCashier(RegisterDTO registerDTO) {
@@ -82,4 +99,11 @@ public class UserService {
         }
         return dto;
     }
+
+    private String emptyToNull(String value) {
+        if (value == null) return null;
+        value = value.trim();
+        return value.isEmpty() ? null : value;
+    }
+
 }

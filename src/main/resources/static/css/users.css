@@ -1,0 +1,61 @@
+/* Table Styles */
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.user-table thead {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+}
+
+.user-table th {
+    text-align: left;
+    padding: 14px 16px;
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.user-table th.text-right {
+    text-align: right;
+}
+
+.user-table tbody tr {
+    border-bottom: 1px solid #f0f0f0;
+    transition: all 0.2s ease;
+}
+
+.user-table tbody tr:hover {
+    background: #f0fff4;
+    transform: scale(1.01);
+    box-shadow: 0 2px 8px rgba(17, 153, 142, 0.1);
+}
+
+.user-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.user-table td {
+    padding: 14px 16px;
+    font-size: 14px;
+    color: #333;
+}
+
+.user-table td.text-right {
+    text-align: right;
+    font-weight: 600;
+    color: #11998e;
+}
+
+.user-table .empty-row {
+    text-align: center;
+    padding: 32px;
+    color: #999;
+    font-style: italic;
+}

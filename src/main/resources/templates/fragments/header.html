@@ -1,3 +1,4 @@
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <!-- Header Fragment -->
 <div class="app-header">
     <div class="brand" th:href="@{/}">
@@ -10,7 +11,7 @@
                 <img class="avatar" th:src="@{/images/default-avatar.svg}" alt="avatar">
             </a>
             <div class="user-meta">
-                <div class="user-name" sec:authentication="name">user@example.com</div>
+                <div class="user-name" sec:authentication="principal.fullName"></div>
                 <div class="user-role" sec:authorize="hasRole('ADMIN')">Admin</div>
                 <div class="user-role" sec:authorize="hasRole('CASHIER')">Cashier</div>
             </div>

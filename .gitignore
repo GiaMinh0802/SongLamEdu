@@ -41,8 +41,14 @@ application-local.properties
 application-local.yml
 application-prod.properties
 application-prod.yml
+
+### Environment files ###
 .env
-*.env
+.env.local
+.env.*.local
+
+# Keep example file
+!.env.example
 
 ### Logs ###
 logs/

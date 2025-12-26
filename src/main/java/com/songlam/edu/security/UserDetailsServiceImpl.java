@@ -40,14 +40,15 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             authorities.add(new SimpleGrantedAuthority("ROLE_CASHIER"));
         }
 
-        return org.springframework.security.core.userdetails.User
-                .withUsername(user.getPerson().getEmail())
+        return CustomUserDetails
+                .builder(user.getPerson().getEmail())
                 .password(user.getPasswordHash())
                 .authorities(authorities)
                 .accountExpired(false)
                 .accountLocked(!user.getIsActive())
                 .credentialsExpired(false)
                 .disabled(!user.getIsActive())
+                .fullName(user.getPerson().getFullName())
                 .build();
     }
 }

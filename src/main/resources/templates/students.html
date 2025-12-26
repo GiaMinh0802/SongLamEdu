@@ -40,6 +40,7 @@
                     <div class="info-label"></div>
                     <div class="search-actions">
                         <button type="button" class="btn primary" sec:authorize="hasRole('ADMIN')" onclick="openPopup('addStudentPopup')">➕ Thêm học sinh</button>
+                        <button sec:authorize="hasRole('CASHIER')"></button>
                         <div class="search-buttons">
                             <button type="submit" class="btn primary">🔎 Tìm kiếm</button>
                             <button type="button" class="btn" onclick="clearSearchFilters()">❌ Xóa lọc</button>
@@ -77,8 +78,8 @@
                             <span class="badge" th:classappend="${s.status} == 1 ? 'badge-success' : 'badge-danger'" th:text="${s.status} == 1 ? 'Đang học' : 'Thôi học'"></span>
                             </td>
                             <td class="action">
-                                <button type="button" class="btn btn-sm primary" th:onclick="'window.location.href=\'' + @{/students/detail/{studentId}(studentId=${s.citizenId})} + '\''">Chi tiết</button>
-                                <button type="button" class="btn btn-sm primary" sec:authorize="hasRole('CASHIER')" th:onclick="'window.location.href=\'' + @{'/transactions/revenues'(id=${s.getCitizenId()})} + '\''">Thu học phí</button>
+                                <button type="button" class="btn btn-sm primary" th:onclick="|window.location.href='@{/students/detail/{studentId}(studentId=${s.citizenId})}'|">Chi tiết</button>
+                                <button type="button" class="btn btn-sm primary" sec:authorize="hasRole('CASHIER')" th:onclick="|window.location.href='@{/transactions/revenues(id=${s.citizenId})}'|">Thu học phí</button>
                             </td>
                         </tr>
                         <tr th:if="${students == null || students.totalElements == 0}">
@@ -176,7 +177,8 @@
                         <a th:if="${hasImportErrors}"
                            th:href="@{/students/import/errors}"
                            class="btn btn-sm"
-                           style="margin-left: 12px; white-space: nowrap; text-decoration: none;">
+                           style="margin-left: 12px; white-space: nowrap; text-decoration: none;"
+                           onclick="this.style.display='none'">
                             📄 Chi tiết lỗi
                         </a>
                     </div>

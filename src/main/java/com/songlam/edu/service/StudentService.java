@@ -55,10 +55,6 @@ public class StudentService {
             throw new IllegalArgumentException("CCCD đã được đăng ký");
         }
 
-        if (personRepository.existsById(dto.getCitizenId())) {
-            throw new IllegalArgumentException("CCCD đã được đăng ký");
-        }
-
         Person person = new Person();
         person.setCitizenId(dto.getCitizenId());
         person.setFullName(dto.getFullName());
@@ -74,32 +70,6 @@ public class StudentService {
         student.setStartDate(LocalDate.now());
 
         studentRepository.save(student);
-    }
-
-    public Student updateStudent(String citizenId,
-                                 String fullName,
-                                 LocalDate dateOfBirth,
-                                 short sex,
-                                 String address,
-                                 String phone,
-                                 String email,
-                                 Short status) {
-        Person person = personRepository.findById(citizenId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy học sinh với CCCD " + citizenId));
-        person.setFullName(fullName);
-        person.setDateOfBirth(dateOfBirth);
-        person.setSex(sex);
-        person.setAddress(address);
-        person.setPhone(phone);
-        person.setEmail(email);
-        personRepository.save(person);
-
-        Student student = studentRepository.findById(citizenId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy học sinh với CCCD " + citizenId));
-        if (status != null) {
-            student.setStatus(status);
-        }
-        return studentRepository.save(student);
     }
 
     public ImportResultDTO importStudents(MultipartFile file) {
@@ -156,11 +126,6 @@ public class StudentService {
                 }
 
                 if (studentRepository.existsById(citizenId)) {
-                    result.addError("Dòng " + excelRowNum + ": CCCD đã tồn tại trong hệ thống");
-                    continue;
-                }
-
-                if (personRepository.existsById(citizenId)) {
                     result.addError("Dòng " + excelRowNum + ": CCCD đã tồn tại trong hệ thống");
                     continue;
                 }

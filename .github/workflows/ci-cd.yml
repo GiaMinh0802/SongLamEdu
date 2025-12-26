@@ -1,0 +1,171 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  JAVA_VERSION: '21'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # ==================== BUILD & TEST ====================
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: testdb
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew build -x test
+
+      - name: Run tests
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: testdb
+          DB_USERNAME: testuser
+          DB_PASSWORD: testpass
+        run: ./gradlew test
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-jar
+          path: build/libs/*.jar
+          retention-days: 7
+
+  # ==================== CODE QUALITY ====================
+  code-quality:
+    name: Code Quality Check
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Run Checkstyle (optional)
+        run: ./gradlew check || true
+        continue-on-error: true
+
+  # ==================== BUILD DOCKER IMAGE ====================
+  docker:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: app-jar
+          path: build/libs
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ==================== DEPLOY TO STAGING ====================
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: docker
+    if: github.ref == 'refs/heads/main'
+    environment: staging
+
+    steps:
+      - name: Deploy to staging server
+        run: |
+          echo "Deploying to staging environment..."
+          # Thêm script deploy của bạn ở đây
+          # Ví dụ: SSH vào server và pull image mới
+          # ssh user@staging-server "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest && docker-compose up -d"
+
+  # ==================== DEPLOY TO PRODUCTION ====================
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    if: github.ref == 'refs/heads/main'
+    environment: production
+
+    steps:
+      - name: Deploy to production server
+        run: |
+          echo "Deploying to production environment..."
+          # Thêm script deploy production ở đây

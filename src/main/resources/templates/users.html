@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý người dùng - Song Lâm Edu</title>
     <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/users.css}">
+    <link rel="stylesheet" th:href="@{/css/datepicker.css}">
 </head>
 <body>
 <div th:replace="fragments/header"></div>
@@ -13,13 +16,91 @@
     <main class="app-content">
         <h1 class="page-title-box">👥 Quản lý người dùng</h1>
 
-        <div id="info-container" class="info-wrap">
+        <div id="info-container" class="info-wrap editing">
+
+            <div th:if="${param.active}" class="alert alert-success">
+                ✅ Kích hoạt tài khoản thành công.
+            </div>
+
+            <!-- Tìm kiếm -->
+            <div class="info-section">
+                <h2 class="info-section-title">Tìm kiếm</h2>
+                <form id="searchForm" th:action="@{/users}" method="get" class="info-grid">
+                    <div class="info-label">CCCD</div>
+                    <div>
+                        <input class="info-value" type="text" id="citizenIdInput" name="citizenId" th:value="${citizenId}">
+                    </div>
+
+                    <div class="info-label">Họ và tên</div>
+                    <div>
+                        <input class="info-value" type="text" id="fullNameInput" name="fullName" th:value="${fullName}">
+                    </div>
+
+                    <div class="info-label">Số điện thoại</div>
+                    <div>
+                        <input class="info-value" type="text" id="phoneInput" name="phone" th:value="${phone}" maxlength="10">
+                    </div>
+
+                    <div class="info-label"></div>
+                    <div class="search-actions">
+                        <button></button>
+                        <div class="search-buttons">
+                            <button type="submit" class="btn primary">🔎 Tìm kiếm</button>
+                            <button type="button" class="btn" onclick="clearSearchFilters()">❌ Xóa lọc</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+
+            <!-- Danh sách -->
+            <div class="info-section">
+                <h2 class="info-section-title">Danh sách người dùng</h2>
+                <div style="overflow:auto;">
+                    <table class="user-table">
+                        <thead>
+                        <tr>
+                            <th>CCCD</th>
+                            <th>Họ và tên</th>
+                            <th>Giới tính</th>
+                            <th>Email</th>
+                            <th>SĐT</th>
+                            <th>Tình trạng</th>
+                            <th>Thao tác</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="u : ${users}">
+                            <td th:text="${u.getCitizenId()}"></td>
+                            <td th:text="${u.person.getFullName()}"></td>
+                            <td>
+                                <span class="badge" th:classappend="${u.person.getSex() == 1 ? 'badge-pink' : 'badge-blue'}" th:text="${u.person.getSex() == 1 ? 'Nữ' : 'Nam'}"></span>
+                            </td>
+                            <td th:text="${u.person.getEmail()}"></td>
+                            <td th:text="${u.person.getPhone()}"></td>
+                            <td>
+                                <span class="badge" th:classappend="${u.isActive} ? 'badge-success' : 'badge-danger'" th:text="${u.isActive} ? 'Hoạt động' : 'Chưa kích hoạt'"></span>
+                            </td>
+                            <td class="action">
+                                <button type="button" class="btn btn-sm primary" th:onclick="|window.location.href='@{/users/detail/{userId}(userId=${u.citizenId})}'|">Chi tiết</button>
+                                <button type="button" class="btn btn-sm primary" th:if="${!u.isActive}" th:onclick="|window.location.href='@{/users/active/{userId}(userId=${u.citizenId})}'|">Kích hoạt</button>
+                            </td>
+                        </tr>
+                        <tr th:if="${users == null || users.totalElements == 0}">
+                            <td colspan="7" class="empty-row">Không có dữ liệu</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
         </div>
     </main>
 </div>
 
 <script defer th:src="@{/js/app.js}"></script>
+<script th:src="@{/js/common.js}"></script>
+<script th:src="@{/js/datepicker.js}"></script>
 
 </body>
 </html>

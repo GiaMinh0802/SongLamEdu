@@ -37,12 +37,6 @@ function closeCreateRevenuePopup() {
     document.body.style.overflow = '';
 }
 
-function closePopupOnOverlay(event) {
-    if (event.target.id === 'createRevenuePopup') {
-        closeCreateRevenuePopup();
-    }
-}
-
 function clearSearchFilters() {
     document.getElementById('codeInput').value = '';
     document.getElementById('studentInput').value = '';
