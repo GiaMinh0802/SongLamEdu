@@ -71,30 +71,25 @@ public class DashboardController {
                 throw new IllegalArgumentException("Invalid type: " + type);
         }
 
-        return buildStats(startDate, endDate, type, year, month, quarter);
+        return buildStats(startDate, endDate, type, quarter);
     }
 
     private Map<String, Object> buildStats(LocalDate startDate, LocalDate endDate,
-                                           String type, int year, Integer month, Integer quarter) {
+                                           String type, Integer quarter) {
         Map<String, Object> result = new HashMap<>();
 
-        // Tổng thu (PT)
         BigDecimal totalRevenue = transactionRepository.sumAmountByDateRangeAndType(startDate, endDate, "PT");
         if (totalRevenue == null) totalRevenue = BigDecimal.ZERO;
 
-        // Tổng chi (PC)
         BigDecimal totalExpense = transactionRepository.sumAmountByDateRangeAndType(startDate, endDate, "PC");
         if (totalExpense == null) totalExpense = BigDecimal.ZERO;
 
-        // Số giao dịch thu
         Long revenueCount = transactionRepository.countByDateRangeAndType(startDate, endDate, "PT");
         if (revenueCount == null) revenueCount = 0L;
 
-        // Số giao dịch chi
         Long expenseCount = transactionRepository.countByDateRangeAndType(startDate, endDate, "PC");
         if (expenseCount == null) expenseCount = 0L;
 
-        // Số dư = Thu - Chi
         BigDecimal balance = totalRevenue.subtract(totalExpense);
 
         result.put("totalRevenue", totalRevenue);
@@ -103,7 +98,6 @@ public class DashboardController {
         result.put("revenueCount", revenueCount);
         result.put("expenseCount", expenseCount);
 
-        // Doanh thu theo môn học (chỉ PT)
         List<Object[]> bySubject = transactionRepository.sumAmountGroupBySubjectAndType(startDate, endDate, "PT");
         List<Map<String, Object>> subjectStats = new ArrayList<>();
         for (Object[] row : bySubject) {
@@ -114,7 +108,6 @@ public class DashboardController {
         }
         result.put("bySubject", subjectStats);
 
-        // Doanh thu theo lớp học (chỉ PT)
         List<Object[]> byClass = transactionRepository.sumAmountGroupByClassAndType(startDate, endDate, "PT");
         List<Map<String, Object>> classStats = new ArrayList<>();
         for (Object[] row : byClass) {
@@ -125,11 +118,9 @@ public class DashboardController {
         }
         result.put("byClass", classStats);
 
-        // Timeline chart data
         List<Map<String, Object>> timelineData = new ArrayList<>();
 
         if ("month".equals(type)) {
-            // Theo tuần trong tháng
             List<Object[]> revenueByDay = transactionRepository.sumAmountGroupByDayAndType(startDate, endDate, "PT");
             List<Object[]> expenseByDay = transactionRepository.sumAmountGroupByDayAndType(startDate, endDate, "PC");
 
