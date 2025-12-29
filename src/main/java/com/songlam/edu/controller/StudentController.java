@@ -1,6 +1,7 @@
 package com.songlam.edu.controller;
 
 import com.songlam.edu.dto.ImportResultDTO;
+import com.songlam.edu.dto.RevenueDTO;
 import com.songlam.edu.dto.StudentDTO;
 import com.songlam.edu.entity.Student;
 import com.songlam.edu.service.StudentService;
@@ -22,6 +23,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Controller
 @RequestMapping("/students")
@@ -38,12 +40,16 @@ public class StudentController {
                                @RequestParam(value = "citizenId", required = false) String citizenId,
                                @RequestParam(value = "fullName", required = false) String fullName,
                                @RequestParam(value = "phone", required = false) String phone,
-                               @RequestParam(value = "page", required = false) Integer page,
-                               @RequestParam(value = "size", required = false) Integer size) {
+                               @RequestParam(value = "page", defaultValue = "0") int page,
+                               @RequestParam(value = "size", defaultValue = "10") int size) {
 
-        Page<Student> students = studentService.search(citizenId, fullName, phone, page, size);
+        Page<Student> studentPage = studentService.search(citizenId, fullName, phone, page, size);
 
-        model.addAttribute("students", students);
+        model.addAttribute("students", studentPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", studentPage.getTotalPages());
+        model.addAttribute("totalItems", studentPage.getTotalElements());
+        model.addAttribute("pageSize", size);
         model.addAttribute("citizenId", citizenId);
         model.addAttribute("fullName", fullName);
         model.addAttribute("phone", phone);
@@ -137,5 +143,24 @@ public class StudentController {
     public String updateStudent(@ModelAttribute StudentDTO dto) {
         studentService.updateStudent(dto);
         return "redirect:/students/detail/" + dto.getCitizenId() + "?updated=true";
+    }
+
+    @GetMapping("/api/search")
+    @ResponseBody
+    public Page<StudentDTO> searchStudentsApi(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "yearId", required = false) Long yearId,
+            @RequestParam(value = "classId", required = false) Long classId,
+            @RequestParam(value = "subjectId", required = false) Long subjectId,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size) {
+
+        return studentService.searchByKeywordAndFilters(keyword, yearId, classId, subjectId, page, size);
+    }
+
+    @GetMapping("/api/student/{citizenId}")
+    @ResponseBody
+    public List<RevenueDTO> getPaymentsByStudent(@PathVariable String citizenId) {
+        return studentService.getPaymentHistoryById(citizenId);
     }
 }

@@ -1,8 +1,10 @@
 package com.songlam.edu.config;
 
+import com.songlam.edu.entity.AcademicYear;
 import com.songlam.edu.entity.BusinessInfo;
 import com.songlam.edu.entity.Person;
 import com.songlam.edu.entity.User;
+import com.songlam.edu.repository.AcademicYearRepository;
 import com.songlam.edu.repository.BusinessInfoRepository;
 import com.songlam.edu.repository.PersonRepository;
 import com.songlam.edu.repository.UserRepository;
@@ -21,6 +23,7 @@ public class DataInitializer {
     CommandLineRunner initDatabase(UserRepository userRepository,
                                    PersonRepository personRepository,
                                    BusinessInfoRepository businessInfoRepository,
+                                   AcademicYearRepository academicYearRepository,
                                    PasswordEncoder passwordEncoder,
                                    JdbcTemplate jdbcTemplate) {
         return args -> {
@@ -34,7 +37,7 @@ public class DataInitializer {
                 person.setCitizenId(citizenId);
                 person.setFullName("An Thị Thanh");
                 person.setDateOfBirth(LocalDate.of(1990, 1, 1));
-                person.setSex((short) 1); // Female
+                person.setSex((short) 1);
                 person.setAddress("193/5B Nguyễn Thái Bình, Phường Tân Lập, Tỉnh Đắk Lắk");
                 person.setPhone("0835100699");
                 person.setEmail("mrlong07.11@gmail.com");
@@ -59,7 +62,7 @@ public class DataInitializer {
             if (!userRepository.existsByPersonEmail(adminEmail)) {
                 Person adminPerson = new Person();
                 adminPerson.setCitizenId("999999999999");
-                adminPerson.setFullName("ADMIN 01");
+                adminPerson.setFullName("Dương Thành Long");
                 adminPerson.setDateOfBirth(LocalDate.of(1990, 1, 1));
                 adminPerson.setSex((short) 0);
                 adminPerson.setPhone("0835100699");
@@ -72,6 +75,23 @@ public class DataInitializer {
                 adminUser.setIsActive(true);
                 adminUser.setPerson(adminPerson);
                 userRepository.save(adminUser);
+            }
+
+            int startYear = 2025;
+            int numberOfYears = 10;
+            for (int i = 0; i < numberOfYears; i++) {
+                int fromYear = startYear + i;
+                int toYear = fromYear + 1;
+                String name = fromYear + "-" + toYear;
+
+                if (!academicYearRepository.existsByName(name)) {
+                    AcademicYear year = new AcademicYear();
+                    year.setName(name);
+                    year.setStartYear(fromYear);
+                    year.setEndYear(toYear);
+
+                    academicYearRepository.save(year);
+                }
             }
         };
     }

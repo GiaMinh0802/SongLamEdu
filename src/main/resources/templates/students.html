@@ -21,27 +21,29 @@
             <!-- Tìm kiếm -->
             <div class="info-section">
                 <h2 class="info-section-title">Tìm kiếm</h2>
-                <form id="searchForm" th:action="@{/students}" method="get" class="info-grid">
-                    <div class="info-label">CCCD</div>
-                    <div>
-                        <input class="info-value" type="text" id="citizenIdInput" name="citizenId" th:value="${citizenId}">
+                <form id="searchForm" th:action="@{/students}" method="get" class="search-form-grid">
+                    <!-- Row 1: CCCD, Họ và tên, Số điện thoại -->
+                    <div class="search-row">
+                        <div class="search-field">
+                            <label class="search-label">CCCD</label>
+                            <input class="search-input" type="text" id="citizenIdInput" name="citizenId" th:value="${citizenId}">
+                        </div>
+                        <div class="search-field">
+                            <label class="search-label">Họ và tên</label>
+                            <input class="search-input" type="text" id="fullNameInput" name="fullName" th:value="${fullName}">
+                        </div>
+                        <div class="search-field">
+                            <label class="search-label">Số điện thoại</label>
+                            <input class="search-input" type="text" id="phoneInput" name="phone" th:value="${phone}" maxlength="10">
+                        </div>
                     </div>
 
-                    <div class="info-label">Họ và tên</div>
-                    <div>
-                        <input class="info-value" type="text" id="fullNameInput" name="fullName" th:value="${fullName}">
-                    </div>
-
-                    <div class="info-label">Số điện thoại</div>
-                    <div>
-                        <input class="info-value" type="text" id="phoneInput" name="phone" th:value="${phone}" maxlength="10">
-                    </div>
-
-                    <div class="info-label"></div>
-                    <div class="search-actions">
-                        <button type="button" class="btn primary" sec:authorize="hasRole('ADMIN')" onclick="openPopup('addStudentPopup')">➕ Thêm học sinh</button>
-                        <button sec:authorize="hasRole('CASHIER')"></button>
-                        <div class="search-buttons">
+                    <!-- Row 2: Buttons -->
+                    <div class="search-actions-row">
+                        <div class="search-actions-left">
+                            <button type="button" class="btn primary" sec:authorize="hasRole('ADMIN')" onclick="openPopup('addStudentPopup')">➕ Thêm học sinh</button>
+                        </div>
+                        <div class="search-actions-right">
                             <button type="submit" class="btn primary">🔎 Tìm kiếm</button>
                             <button type="button" class="btn" onclick="clearSearchFilters()">❌ Xóa lọc</button>
                         </div>
@@ -66,27 +68,71 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="s : ${students}">
-                            <td th:text="${s.getCitizenId()}"></td>
-                            <td th:text="${s.person.getFullName()}"></td>
-                            <td th:text="${s.person.getDateOfBirth() != null ? #temporals.format(s.person.getDateOfBirth(), 'dd/MM/yyyy') : '-'}"></td>
+                        <tr th:each="s : ${students}" style="cursor: pointer;"
+                            th:data-citizen-id="${s.citizenId}"
+                            th:data-full-name="${s.person.fullName}"
+                            onclick="showPaymentHistory(this.dataset.citizenId, this.dataset.fullName)">
+                            <td th:text="${s.citizenId}"></td>
+                            <td th:text="${s.person.fullName}"></td>
+                            <td th:text="${s.person.dateOfBirth != null ? #temporals.format(s.person.dateOfBirth, 'dd/MM/yyyy') : '-'}"></td>
                             <td>
-                                <span class="badge" th:classappend="${s.person.getSex() == 1 ? 'badge-pink' : 'badge-blue'}" th:text="${s.person.getSex() == 1 ? 'Nữ' : 'Nam'}"></span>
+                                <span class="badge" th:classappend="${s.person.sex == 1 ? 'badge-pink' : 'badge-blue'}" th:text="${s.person.sex == 1 ? 'Nữ' : 'Nam'}"></span>
                             </td>
                             <td th:text="${s.person.getPhone()}"></td>
                             <td>
-                            <span class="badge" th:classappend="${s.status} == 1 ? 'badge-success' : 'badge-danger'" th:text="${s.status} == 1 ? 'Đang học' : 'Thôi học'"></span>
+                                <span class="badge" th:classappend="${s.status} == 1 ? 'badge-success' : 'badge-danger'" th:text="${s.status} == 1 ? 'Đang học' : 'Thôi học'"></span>
                             </td>
-                            <td class="action">
-                                <button type="button" class="btn btn-sm primary" th:onclick="|window.location.href='@{/students/detail/{id}(id=${s.citizenId})}'|">Chi tiết</button>
-                                <button type="button" class="btn btn-sm primary" sec:authorize="hasRole('CASHIER')" th:if="${s.status} == 1" th:onclick="|window.location.href='@{/transactions/revenues(id=${s.citizenId})}'|">Thu học phí</button>
+                            <td class="action" onclick="event.stopPropagation();">
+                                <button type="button" class="btn btn-sm primary" th:data-id="${s.citizenId}" onclick="window.location.href='/students/detail/' + this.dataset.id">Chi tiết</button>
                             </td>
                         </tr>
-                        <tr th:if="${students == null || students.totalElements == 0}">
+                        <tr th:if="${totalPages == 0}">
                             <td colspan="7" class="empty-row">Không có dữ liệu</td>
                         </tr>
                         </tbody>
                     </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination-container" th:if="${totalPages > 0}">
+                    <div class="pagination-info">
+                        Hiển thị <span th:text="${students.size()}">0</span> / <span th:text="${totalItems}">0</span> học sinh
+                    </div>
+                    <div class="pagination">
+                        <a th:href="@{/students(page=0, size=${pageSize}, citizenId=${citizenId}, fullName=${fullName}, phone=${phone})}"
+                           th:classappend="${currentPage == 0} ? 'disabled'" class="pagination-btn">
+                            ⏮
+                        </a>
+                        <a th:href="@{/students(page=${currentPage - 1}, size=${pageSize}, citizenId=${citizenId}, fullName=${fullName}, phone=${phone})}"
+                           th:classappend="${currentPage == 0} ? 'disabled'" class="pagination-btn">
+                            ◀
+                        </a>
+
+                        <th:block th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+                            <a th:if="${i >= currentPage - 2 and i <= currentPage + 2}"
+                               th:href="@{/students(page=${i}, size=${pageSize}, citizenId=${citizenId}, fullName=${fullName}, phone=${phone})}"
+                               th:text="${i + 1}"
+                               th:classappend="${i == currentPage} ? 'active'"
+                               class="pagination-btn"></a>
+                        </th:block>
+
+                        <a th:href="@{/students(page=${currentPage + 1}, size=${pageSize}, citizenId=${citizenId}, fullName=${fullName}, phone=${phone})}"
+                           th:classappend="${currentPage >= totalPages - 1} ? 'disabled'" class="pagination-btn">
+                            ▶
+                        </a>
+                        <a th:href="@{/students(page=${totalPages - 1}, size=${pageSize}, citizenId=${citizenId}, fullName=${fullName}, phone=${phone})}"
+                           th:classappend="${currentPage >= totalPages - 1} ? 'disabled'" class="pagination-btn">
+                            ⏭
+                        </a>
+                    </div>
+                    <div class="pagination-size">
+                        <label>Hiển thị:</label>
+                        <select onchange="changePageSize(this.value)">
+                            <option value="10" th:selected="${pageSize == 10}">10</option>
+                            <option value="20" th:selected="${pageSize == 20}">20</option>
+                            <option value="50" th:selected="${pageSize == 50}">50</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
@@ -202,6 +248,37 @@
                     <button type="submit" class="btn primary">⬆️ Import</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<div id="paymentHistoryPopup" class="popup-overlay" onclick="closePopupOnOverlay(event, 'paymentHistoryPopup')">
+    <div class="popup-content" style="max-width: 800px;">
+        <div class="popup-header">
+            <h3 class="popup-title">💰 Lịch sử đóng học phí</h3>
+            <button class="popup-close" onclick="closePopup('paymentHistoryPopup')">&times;</button>
+        </div>
+        <div id="studentInfoHeader" style="margin-bottom: 16px; padding: 12px; background: #f5f5f5; border-radius: 8px;">
+            <strong id="popupStudentName"></strong> - <span id="popupStudentId"></span>
+        </div>
+        <div style="overflow: auto; max-height: 400px;">
+            <table class="student-table">
+                <thead>
+                <tr>
+                    <th>Mã phiếu</th>
+                    <th>Ngày đóng</th>
+                    <th>Năm học</th>
+                    <th>Lớp học</th>
+                    <th>Môn học</th>
+                    <th>Số tiền</th>
+                </tr>
+                </thead>
+                <tbody id="paymentHistoryBody">
+                </tbody>
+            </table>
+        </div>
+        <div id="paymentTotalSection" style="margin-top: 16px; text-align: right; font-weight: bold;">
+            Tổng cộng: <span id="paymentTotal">0</span> VNĐ
         </div>
     </div>
 </div>

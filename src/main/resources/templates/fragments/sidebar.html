@@ -10,6 +10,9 @@
                 <a th:href="@{/users}">👥 Quản lý người dùng</a>
             </li>
             <li sec:authorize="hasAnyRole('ADMIN','CASHIER')">
+                <a th:href="@{/classes}">📚 Quản lý lớp học</a>
+            </li>
+            <li sec:authorize="hasAnyRole('ADMIN','CASHIER')">
                 <a th:href="@{/students}">🎓 Quản lý học sinh</a>
             </li>
             <li sec:authorize="hasAnyRole('ADMIN','CASHIER')">

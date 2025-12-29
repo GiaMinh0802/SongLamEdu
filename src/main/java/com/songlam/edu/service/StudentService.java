@@ -1,11 +1,15 @@
 package com.songlam.edu.service;
 
 import com.songlam.edu.dto.ImportResultDTO;
+import com.songlam.edu.dto.RevenueDTO;
 import com.songlam.edu.dto.StudentDTO;
 import com.songlam.edu.entity.Person;
 import com.songlam.edu.entity.Student;
+import com.songlam.edu.entity.Subject;
+import com.songlam.edu.entity.Transaction;
 import com.songlam.edu.repository.PersonRepository;
 import com.songlam.edu.repository.StudentRepository;
+import com.songlam.edu.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -32,13 +36,13 @@ public class StudentService {
 
     private final StudentRepository studentRepository;
     private final PersonRepository personRepository;
+    private final TransactionRepository transactionRepository;
 
-    private static final int DEFAULT_PAGE_SIZE = 20;
     private static final Pattern CITIZENID_PATTERN = Pattern.compile("^\\d{12}(-\\d{2})?$");
     private static final Pattern PHONE_PATTERN = Pattern.compile("^\\d{10}$");
 
     public Page<Student> search(String citizenId, String fullName, String phone, Integer page, Integer size) {
-        Pageable pageable = PageRequest.of(page == null || page < 0 ? 0 : page, size == null || size <= 0 ? DEFAULT_PAGE_SIZE : size);
+        Pageable pageable = PageRequest.of(page == null || page < 0 ? 0 : page, size == null || size <= 0 ? 10 : size);
         String cid = emptyToNull(citizenId);
         String name = emptyToNull(fullName);
         String ph = emptyToNull(phone);
@@ -178,6 +182,44 @@ public class StudentService {
         return result;
     }
 
+    public Page<StudentDTO> searchByKeywordAndFilters(String keyword, Long yearId, Long classId, Long subjectId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        String searchTerm = (keyword != null && !keyword.trim().isEmpty())
+                ? "%" + keyword.trim().toLowerCase() + "%"
+                : null;
+
+        Page<Student> students = studentRepository.searchByKeywordAndFilters(searchTerm, yearId, classId, subjectId, pageable);
+
+        return students.map(this::toDTO);
+    }
+
+    public List<RevenueDTO> getPaymentHistoryById(String citizenId) {
+        List<Transaction> revenues = transactionRepository.findByStudentCitizenId(citizenId);
+
+        return revenues.stream().map(r -> {
+            RevenueDTO dto = new RevenueDTO();
+            dto.setId(r.getTransactionNumber());
+            dto.setPaymentDate(r.getDateOfRecorded());
+            dto.setAmount(r.getAmount().longValueExact());
+
+            if (r.getSubject() != null) {
+                Subject subject = r.getSubject();
+                dto.setSubjectName(subject.getSubjectName());
+
+                if (subject.getSchoolClass() != null) {
+                    dto.setClassName(subject.getSchoolClass().getClassName());
+
+                    if (subject.getSchoolClass().getAcademicYear() != null) {
+                        dto.setAcademicYearName(subject.getSchoolClass().getAcademicYear().getName());
+                    }
+                }
+            }
+
+            return dto;
+        }).toList();
+    }
+
     public StudentDTO toDTO(Student student) {
         StudentDTO dto = new StudentDTO();
         if (student == null) return dto;
@@ -232,4 +274,5 @@ public class StudentService {
     private static boolean isBlank(String s) {
         return s == null || s.trim().isEmpty();
     }
+
 }

@@ -142,7 +142,7 @@
 
         .signature-box .subtitle {
             font-size: 10pt;
-            margin-bottom: 60px;
+            margin-bottom: 80px;
         }
 
         /* ===== Footer ===== */
@@ -165,10 +165,8 @@
             <tr>
                 <td style="width: 65%;">
                     <div class="header-left">
-                        <div class="bold uppercase">HỘ, CÁ NHÂN KINH DOANH:</div>
-                        <p th:text="${businessName}"></p>
-                        <div class="bold uppercase" style="margin-top:10px">Địa chỉ:</div>
-                        <p th:text="${businessAddress}">${businessAddress}</p>
+                        <div th:text="${businessName}" class="bold uppercase"></div>
+                        <div th:text="${businessAddress}" class="" style="margin-top:10px"></div>
                     </div>
                 </td>
                 <td style="width: 35%; text-align: right;">
@@ -273,6 +271,20 @@
                     <td class="signature-box">
                         <div class="title bold uppercase">THỦ QUỸ</div>
                         <div class="subtitle italic">(Ký, họ tên)</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="signature-box">
+                        <div class="signature-name" th:text="${representativeName}"></div>
+                    </td>
+                    <td class="signature-box">
+                        <div class="signature-name" th:text="${cashierName}"></div>
+                    </td>
+                    <td class="signature-box">
+                        <div class="signature-name"></div>
+                    </td>
+                    <td class="signature-box">
+                        <div class="signature-name" th:text="${cashierName}"></div>
                     </td>
                 </tr>
             </table>

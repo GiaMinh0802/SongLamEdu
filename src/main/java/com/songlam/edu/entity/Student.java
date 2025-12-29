@@ -1,9 +1,9 @@
 package com.songlam.edu.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -16,7 +16,6 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Student {
 
     @Id
@@ -30,26 +29,22 @@ public class Student {
     private LocalDate endDate;
 
     @Column(name = "status")
-    private Short status = 1; // 0: stopped, 1: studying
+    private Short status = 1; // 1: Studying, 0: Stopped
 
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId
-    @JoinColumn(name = "citizen_id", referencedColumnName = "citizen_id")
+    @JoinColumn(name = "citizen_id")
     private Person person;
 
-    @JsonIgnore
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
+    private List<StudentSubject> studentSubjects;
+
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
     private List<Transaction> transactions;
 
     @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 }

@@ -24,8 +24,6 @@ public class UserService {
     private final PersonRepository personRepository;
     private final PasswordEncoder passwordEncoder;
 
-    private static final int DEFAULT_PAGE_SIZE = 20;
-
     public Optional<User> findByEmail(String email) {
         return userRepository.findByPersonEmail(email);
     }
@@ -35,7 +33,7 @@ public class UserService {
     }
 
     public Page<User> search(String citizenId, String fullName, String phone, Integer page, Integer size) {
-        Pageable pageable = PageRequest.of(page == null || page < 0 ? 0 : page, size == null || size <= 0 ? DEFAULT_PAGE_SIZE : size);
+        Pageable pageable = PageRequest.of(page == null || page < 0 ? 0 : page, size == null || size <= 0 ? 10 : size);
         return  userRepository.search(emptyToNull(citizenId),
                                     emptyToNull(fullName),
                                     emptyToNull(phone),

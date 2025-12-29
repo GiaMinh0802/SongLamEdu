@@ -1,6 +1,5 @@
 package com.songlam.edu.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -49,19 +48,15 @@ public class Person {
     @Column(name = "email", unique = true)
     private String email;
 
-    @JsonIgnore
     @OneToOne(mappedBy = "person", cascade = CascadeType.ALL)
     private User user;
 
-    @JsonIgnore
     @OneToOne(mappedBy = "person", cascade = CascadeType.ALL)
     private Student student;
 
     @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 }

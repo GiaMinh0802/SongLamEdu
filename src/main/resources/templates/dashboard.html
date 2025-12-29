@@ -1,25 +1,176 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thống kê doanh thu - Song Lâm Edu</title>
     <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
 </head>
 <body>
 <div th:replace="fragments/header"></div>
 <div class="app-shell">
     <div th:replace="fragments/sidebar"></div>
     <main class="app-content">
-        <h1 class="page-title-box">📊 Thống kê doanh thu</h1>
+        <h1 class="page-title-box">📊 Thống kê thu chi</h1>
 
         <div id="info-container" class="info-wrap">
+            <!-- Tab Navigation -->
+            <div class="dashboard-tabs">
+                <button type="button" class="dashboard-tab active" data-tab="month" onclick="switchDashboardTab('month')">
+                    📅 Theo tháng
+                </button>
+                <button type="button" class="dashboard-tab" data-tab="quarter" onclick="switchDashboardTab('quarter')">
+                    📆 Theo quý
+                </button>
+                <button type="button" class="dashboard-tab" data-tab="year" onclick="switchDashboardTab('year')">
+                    📈 Theo năm
+                </button>
+            </div>
 
+            <!-- Filter Section -->
+            <div class="dashboard-filters">
+                <div id="monthFilter" class="filter-group">
+                    <div class="filter-item">
+                        <label>Năm:</label>
+                        <select id="monthYearSelect" onchange="loadStats()">
+                            <th:block th:each="y : ${years}">
+                                <option th:value="${y}" th:text="${y}" th:selected="${y == currentYear}"></option>
+                            </th:block>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>Tháng:</label>
+                        <select id="monthSelect" onchange="loadStats()">
+                            <option value="1">Tháng 1</option>
+                            <option value="2">Tháng 2</option>
+                            <option value="3">Tháng 3</option>
+                            <option value="4">Tháng 4</option>
+                            <option value="5">Tháng 5</option>
+                            <option value="6">Tháng 6</option>
+                            <option value="7">Tháng 7</option>
+                            <option value="8">Tháng 8</option>
+                            <option value="9">Tháng 9</option>
+                            <option value="10">Tháng 10</option>
+                            <option value="11">Tháng 11</option>
+                            <option value="12">Tháng 12</option>
+                        </select>
+                    </div>
+                    <div class="filter-actions">
+                        <button type="button" class="btn btn-export" onclick="exportReport()">
+                            📥 Xuất Excel
+                        </button>
+                    </div>
+                </div>
+
+                <div id="quarterFilter" class="filter-group hidden">
+                    <div class="filter-item">
+                        <label>Năm:</label>
+                        <select id="quarterYearSelect" onchange="loadStats()">
+                            <th:block th:each="y : ${years}">
+                                <option th:value="${y}" th:text="${y}" th:selected="${y == currentYear}"></option>
+                            </th:block>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>Quý:</label>
+                        <select id="quarterSelect" onchange="loadStats()">
+                            <option value="1">Quý 1 (T1-T3)</option>
+                            <option value="2">Quý 2 (T4-T6)</option>
+                            <option value="3">Quý 3 (T7-T9)</option>
+                            <option value="4">Quý 4 (T10-T12)</option>
+                        </select>
+                    </div>
+                    <div class="filter-actions">
+                        <button type="button" class="btn btn-export" onclick="exportReport()">
+                            📥 Xuất Excel
+                        </button>
+                    </div>
+                </div>
+
+                <div id="yearFilter" class="filter-group hidden">
+                    <div class="filter-item">
+                        <label>Năm:</label>
+                        <select id="yearSelect" onchange="loadStats()">
+                            <th:block th:each="y : ${years}">
+                                <option th:value="${y}" th:text="${y}" th:selected="${y == currentYear}"></option>
+                            </th:block>
+                        </select>
+                    </div>
+                    <div class="filter-actions">
+                        <button type="button" class="btn btn-export" onclick="exportReport()">
+                            📥 Xuất Excel
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="stats-cards">
+                <div class="stats-card revenue">
+                    <div class="stats-icon">💰</div>
+                    <div class="stats-content">
+                        <div class="stats-label">Tổng thu</div>
+                        <div class="stats-value" id="totalRevenue">0 VNĐ</div>
+                        <div class="stats-sub" id="revenueCount">0 giao dịch</div>
+                    </div>
+                </div>
+                <div class="stats-card expense">
+                    <div class="stats-icon">💸</div>
+                    <div class="stats-content">
+                        <div class="stats-label">Tổng chi</div>
+                        <div class="stats-value" id="totalExpense">0 VNĐ</div>
+                        <div class="stats-sub" id="expenseCount">0 giao dịch</div>
+                    </div>
+                </div>
+                <div class="stats-card balance">
+                    <div class="stats-icon">📊</div>
+                    <div class="stats-content">
+                        <div class="stats-label">Số dư</div>
+                        <div class="stats-value" id="balance">0 VNĐ</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline Chart -->
+            <div class="daily-chart-section">
+                <h3 class="chart-title" id="timelineChartTitle">📈 Biểu đồ thu - chi theo tuần</h3>
+                <div class="chart-legend">
+                    <span class="legend-item revenue-legend">🟢 Thu</span>
+                    <span class="legend-item expense-legend">🔴 Chi</span>
+                </div>
+                <div class="daily-chart-container" id="timelineChart">
+                    <div class="loading-placeholder">Đang tải dữ liệu...</div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="charts-section">
+                <div class="chart-container">
+                    <h3 class="chart-title">📚 Thu theo môn học</h3>
+                    <div class="chart-content" id="subjectChart">
+                        <div class="loading-placeholder">Đang tải dữ liệu...</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <h3 class="chart-title">🏫 Thu theo lớp học</h3>
+                    <div class="chart-content" id="classChart">
+                        <div class="loading-placeholder">Đang tải dữ liệu...</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 </div>
 
-<script defer th:src="@{/js/app.js}"></script>
+<input type="hidden" id="initMonth" th:value="${currentMonth}">
+<input type="hidden" id="initQuarter" th:value="${currentQuarter}">
+<input type="hidden" id="initYear" th:value="${currentYear}">
 
+<script th:src="@{/js/app.js}"></script>
+<script th:src="@{/js/common.js}"></script>
+<script th:src="@{/js/dashboard.js}"></script>
 </body>
 </html>

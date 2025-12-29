@@ -8,6 +8,7 @@ import java.time.LocalDate;
 @Data
 public class TransactionDTO {
     private String transactionId;
+    private String type;
     private String studentName;
     private String cashierName;
     @DateTimeFormat(pattern = "dd/MM/yyyy")
@@ -24,5 +25,7 @@ public class TransactionDTO {
     private String attachments;
     private String sourceDocuments;
     private String note;
-    private String status;
+    private String academicYearName;
+    private String className;
+    private String subjectName;
 }

@@ -142,6 +142,66 @@ function clearSearchFilters() {
     document.getElementById('phoneInput').value = '';
 }
 
+function showPaymentHistory(citizenId, fullName) {
+    document.getElementById('popupStudentId').textContent = citizenId;
+    document.getElementById('popupStudentName').textContent = fullName;
+
+    const tbody = document.getElementById('paymentHistoryBody');
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-row">Đang tải...</td></tr>';
+
+    openPopup('paymentHistoryPopup');
+
+    fetch(`/students/api/student/${citizenId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-row">Chưa có khoản đóng nào</td></tr>';
+                document.getElementById('paymentTotal').textContent = '0';
+                return;
+            }
+
+            let total = 0;
+            tbody.innerHTML = '';
+
+            data.forEach(payment => {
+                total += payment.amount || 0;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${payment.id || '-'}</td>
+                    <td>${formatDate(payment.paymentDate)}</td>
+                    <td>${payment.academicYearName || '-'}</td>
+                    <td>${payment.className || '-'}</td>
+                    <td>${payment.subjectName || '-'}</td>
+                    <td>${formatCurrency(payment.amount)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            document.getElementById('paymentTotal').textContent = formatCurrency(total);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            tbody.innerHTML = '<tr><td colspan="6" class="empty-row">Có lỗi xảy ra</td></tr>';
+        });
+}
+
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('vi-VN').format(amount || 0);
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return '-';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('vi-VN');
+}
+
+function changePageSize(size) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('size', size);
+    url.searchParams.set('page', '0');
+    window.location.href = url.toString();
+}
+
 document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
         closePopup('addStudentPopup');

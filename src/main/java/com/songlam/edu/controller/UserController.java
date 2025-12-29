@@ -27,12 +27,16 @@ public class UserController {
                             @RequestParam(value = "citizenId", required = false) String citizenId,
                             @RequestParam(value = "fullName", required = false) String fullName,
                             @RequestParam(value = "phone", required = false) String phone,
-                            @RequestParam(value = "page", required = false) Integer page,
-                            @RequestParam(value = "size", required = false) Integer size) {
+                            @RequestParam(defaultValue = "0") int page,
+                            @RequestParam(defaultValue = "10") int size) {
 
         Page<User> users = userService.search(citizenId, fullName, phone, page, size);
 
         model.addAttribute("users", users);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("pageSize", size);
+        model.addAttribute("totalPages", users.getTotalPages());
+        model.addAttribute("totalItems", users.getTotalElements());
         model.addAttribute("citizenId", citizenId);
         model.addAttribute("fullName", fullName);
         model.addAttribute("phone", phone);

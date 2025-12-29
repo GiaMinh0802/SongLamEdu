@@ -25,26 +25,27 @@
             <!-- Tìm kiếm -->
             <div class="info-section">
                 <h2 class="info-section-title">Tìm kiếm</h2>
-                <form id="searchForm" th:action="@{/users}" method="get" class="info-grid">
-                    <div class="info-label">CCCD</div>
-                    <div>
-                        <input class="info-value" type="text" id="citizenIdInput" name="citizenId" th:value="${citizenId}">
+                <form id="searchForm" th:action="@{/users}" method="get" class="search-form-grid">
+                    <!-- Row 1: CCCD, Họ và tên, Số điện thoại -->
+                    <div class="search-row">
+                        <div class="search-field">
+                            <label class="search-label">CCCD</label>
+                            <input class="search-input" type="text" id="citizenIdInput" name="citizenId" th:value="${citizenId}">
+                        </div>
+                        <div class="search-field">
+                            <label class="search-label">Họ và tên</label>
+                            <input class="search-input" type="text" id="fullNameInput" name="fullName" th:value="${fullName}">
+                        </div>
+                        <div class="search-field">
+                            <label class="search-label">Số điện thoại</label>
+                            <input class="search-input" type="text" id="phoneInput" name="phone" th:value="${phone}" maxlength="10">
+                        </div>
                     </div>
 
-                    <div class="info-label">Họ và tên</div>
-                    <div>
-                        <input class="info-value" type="text" id="fullNameInput" name="fullName" th:value="${fullName}">
-                    </div>
-
-                    <div class="info-label">Số điện thoại</div>
-                    <div>
-                        <input class="info-value" type="text" id="phoneInput" name="phone" th:value="${phone}" maxlength="10">
-                    </div>
-
-                    <div class="info-label"></div>
-                    <div class="search-actions">
-                        <button></button>
-                        <div class="search-buttons">
+                    <!-- Row 2: Buttons -->
+                    <div class="search-actions-row">
+                        <div class="search-actions-left"></div>
+                        <div class="search-actions-right">
                             <button type="submit" class="btn primary">🔎 Tìm kiếm</button>
                             <button type="button" class="btn" onclick="clearSearchFilters()">❌ Xóa lọc</button>
                         </div>
@@ -71,13 +72,13 @@
                         </thead>
                         <tbody>
                         <tr th:each="u : ${users}">
-                            <td th:text="${u.getCitizenId()}"></td>
-                            <td th:text="${u.person.getFullName()}"></td>
+                            <td th:text="${u.citizenId}"></td>
+                            <td th:text="${u.person.fullName}"></td>
                             <td class="text-center">
-                                <span class="badge" th:classappend="${u.person.getSex() == 1 ? 'badge-pink' : 'badge-blue'}" th:text="${u.person.getSex() == 1 ? 'Nữ' : 'Nam'}"></span>
+                                <span class="badge" th:classappend="${u.person.sex == 1 ? 'badge-pink' : 'badge-blue'}" th:text="${u.person.sex == 1 ? 'Nữ' : 'Nam'}"></span>
                             </td>
-                            <td th:text="${u.person.getEmail()}"></td>
-                            <td th:text="${u.person.getPhone()}"></td>
+                            <td th:text="${u.person.email}"></td>
+                            <td th:text="${u.person.phone}"></td>
                             <td class="text-center">
                                 <span class="badge" th:classappend="${u.isActive} ? 'badge-success' : 'badge-danger'" th:text="${u.isActive} ? 'Hoạt động' : 'Chưa kích hoạt'"></span>
                             </td>
@@ -91,6 +92,48 @@
                         </tr>
                         </tbody>
                     </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination-container" th:if="${users.totalPages > 0}">
+                    <div class="pagination-info">
+                        Hiển thị <span th:text="${users.numberOfElements}">0</span> / <span th:text="${users.totalElements}">0</span> người dùng
+                    </div>
+                    <div class="pagination">
+                        <a th:href="@{/users(page=0, size=${users.size}, citizenId=${citizenId}, fullName=${fullName}, phone=${phone})}"
+                           th:classappend="${users.number == 0} ? 'disabled'" class="pagination-btn">
+                            ⏮
+                        </a>
+                        <a th:href="@{/users(page=${users.number - 1}, size=${users.size}, citizenId=${citizenId}, fullName=${fullName}, phone=${phone})}"
+                           th:classappend="${users.number == 0} ? 'disabled'" class="pagination-btn">
+                            ◀
+                        </a>
+
+                        <th:block th:each="i : ${#numbers.sequence(0, users.totalPages - 1)}">
+                            <a th:if="${i >= users.number - 2 and i <= users.number + 2}"
+                               th:href="@{/users(page=${i}, size=${users.size}, citizenId=${citizenId}, fullName=${fullName}, phone=${phone})}"
+                               th:text="${i + 1}"
+                               th:classappend="${i == users.number} ? 'active'"
+                               class="pagination-btn"></a>
+                        </th:block>
+
+                        <a th:href="@{/users(page=${users.number + 1}, size=${users.size}, citizenId=${citizenId}, fullName=${fullName}, phone=${phone})}"
+                           th:classappend="${users.number >= users.totalPages - 1} ? 'disabled'" class="pagination-btn">
+                            ▶
+                        </a>
+                        <a th:href="@{/users(page=${users.totalPages - 1}, size=${users.size}, citizenId=${citizenId}, fullName=${fullName}, phone=${phone})}"
+                           th:classappend="${users.number >= users.totalPages - 1} ? 'disabled'" class="pagination-btn">
+                            ⏭
+                        </a>
+                    </div>
+                    <div class="pagination-size">
+                        <label>Hiển thị:</label>
+                        <select onchange="changePageSize(this.value)">
+                            <option value="10" th:selected="${users.size == 10}">10</option>
+                            <option value="20" th:selected="${users.size == 20}">20</option>
+                            <option value="50" th:selected="${users.size == 50}">50</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 

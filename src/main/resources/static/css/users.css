@@ -1,3 +1,66 @@
+/* Search Form Grid */
+.search-form-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.search-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    align-items: end;
+}
+
+.search-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.search-label {
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.search-input {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    font-size: 14px;
+    transition: all 0.3s;
+    background: white;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary-start);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.search-input:hover {
+    border-color: var(--hover-border);
+}
+
+.search-actions-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding-top: 8px;
+}
+
+.search-actions-left {
+    display: flex;
+    gap: 8px;
+}
+
+.search-actions-right {
+    display: flex;
+    gap: 8px;
+}
+
 /* Table Styles */
 .user-table {
     width: 100%;
@@ -14,16 +77,12 @@
 }
 
 .user-table th {
-    text-align: center;
+    text-align: left;
     padding: 14px 16px;
     font-weight: 600;
     font-size: 14px;
     letter-spacing: 0.5px;
     text-transform: uppercase;
-}
-
-.user-table th.text-right {
-    text-align: right;
 }
 
 .user-table tbody tr {
@@ -47,15 +106,26 @@
     color: #333;
 }
 
-.user-table td.text-right {
-    text-align: right;
-    font-weight: 600;
-    color: #11998e;
-}
-
 .user-table .empty-row {
     text-align: center;
     padding: 32px;
     color: #999;
     font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .search-row {
+        grid-template-columns: 1fr;
+    }
+
+    .search-actions-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-actions-left,
+    .search-actions-right {
+        justify-content: center;
+    }
 }

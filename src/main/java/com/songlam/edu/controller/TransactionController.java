@@ -3,6 +3,7 @@ package com.songlam.edu.controller;
 import com.songlam.edu.dto.TransactionDTO;
 import com.songlam.edu.entity.Transaction;
 import com.songlam.edu.service.TransactionService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -27,12 +28,16 @@ public class TransactionController {
 
     @GetMapping("/revenues")
     public String viewRevenues(@ModelAttribute TransactionDTO dto, Model model,
-                               @RequestParam(value = "page", required = false) Integer page,
-                               @RequestParam(value = "size", required = false) Integer size) {
+                               @RequestParam(defaultValue = "0") int page,
+                               @RequestParam(defaultValue = "10") int size) {
 
         Page<Transaction> revenues = transactionService.search(dto, page, size);
 
         model.addAttribute("revenues", revenues);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("pageSize", size);
+        model.addAttribute("totalPages", revenues.getTotalPages());
+        model.addAttribute("totalItems", revenues.getTotalElements());
         model.addAttribute("dto", dto);
         return "revenues";
     }
@@ -41,11 +46,14 @@ public class TransactionController {
     public String createRevenue(Model model, Authentication authentication,
                                 @RequestParam("studentId") String studentId,
                                 @RequestParam("reason") String reason,
-                                @RequestParam("amount") String amountStr) {
+                                @RequestParam("amount") String amountStr,
+                                @RequestParam(value = "yearId", required = false) Long yearId,
+                                @RequestParam(value = "classId", required = false) Long classId,
+                                @RequestParam(value = "subjectId", required = false) Long subjectId) {
         try {
             BigDecimal amount = new BigDecimal(amountStr.replaceAll("[.,]", ""));
             String email = authentication.getName();
-            transactionService.createRevenue(studentId.trim(), reason.trim(), amount, email);
+            transactionService.createRevenue(studentId.trim(), reason.trim(), amount, email, yearId, classId, subjectId);
             return "redirect:/transactions/revenues";
         } catch (IllegalArgumentException e) {
             Page<Transaction> revenues = transactionService.search(new TransactionDTO(), null, null);

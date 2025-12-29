@@ -1,0 +1,217 @@
+
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>Quản lý lớp học - Song Lâm Edu</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/classes.css}">
+</head>
+<body>
+<div th:replace="fragments/header"></div>
+<div class="app-shell">
+    <div th:replace="fragments/sidebar"></div>
+    <main class="app-content">
+        <h1 class="page-title-box">📚 Quản lý lớp học</h1>
+
+        <div id="info-container" class="info-wrap editing">
+
+            <!-- Bộ lọc -->
+            <div class="info-section">
+                <h2 class="info-section-title">Bộ lọc tìm kiếm</h2>
+                <div class="filter-row">
+                    <div class="filter-item">
+                        <label for="academicYearSelect">Năm học</label>
+                        <select id="academicYearSelect" class="info-value" onchange="loadClasses()">
+                            <option value="">-- Chọn năm học --</option>
+                            <option th:each="year : ${academicYears}"
+                                    th:value="${year.id}"
+                                    th:text="${year.name}"
+                                    th:selected="${year.id == currentYearId}">
+                            </option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label for="classSelect">Lớp học</label>
+                        <select id="classSelect" class="info-value" onchange="loadSubjects()">
+                            <option value="">-- Chọn lớp học --</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label for="subjectSelect">Môn học</label>
+                        <select id="subjectSelect" class="info-value" onchange="loadStudents()">
+                            <option value="">-- Chọn môn học --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-actions">
+                    <button type="button" class="btn primary" sec:authorize="hasRole('ADMIN')" onclick="openPopup('addClassPopup')">➕ Thêm lớp học</button>
+                    <button type="button" class="btn primary" sec:authorize="hasRole('ADMIN')" onclick="openPopup('addSubjectPopup')">➕ Thêm môn học</button>
+                    <button type="button" class="btn primary" sec:authorize="hasRole('ADMIN')" id="addStudentBtn" onclick="openAddStudentPopup()" disabled>➕ Thêm học sinh</button>
+                </div>
+            </div>
+
+            <!-- Danh sách học sinh -->
+            <div class="info-section">
+                <h2 class="info-section-title">Danh sách học sinh</h2>
+                <div style="overflow:auto;">
+                    <table class="student-table" id="studentTable">
+                        <thead>
+                        <tr>
+                            <th>CCCD</th>
+                            <th>Họ và tên</th>
+                            <th>Ngày sinh</th>
+                            <th>Giới tính</th>
+                            <th>SĐT</th>
+                            <th>Tình trạng</th>
+                            <th>Thao tác</th>
+                        </tr>
+                        </thead>
+                        <tbody id="studentTableBody">
+                        <tr>
+                            <td colspan="7" class="empty-row">Vui lòng chọn năm học, lớp và môn học để xem danh sách học sinh</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <input type="hidden" id="userRole" sec:authorize="hasRole('ADMIN')" value="ADMIN">
+            <input type="hidden" id="userRole" sec:authorize="hasRole('CASHIER')" value="CASHIER">
+        </div>
+    </main>
+</div>
+
+<!-- Popup Thêm Lớp Học -->
+<div id="addClassPopup" class="popup-overlay" onclick="closePopupOnOverlay(event, 'addClassPopup')">
+    <div class="popup-content popup-small">
+        <div class="popup-header">
+            <h3 class="popup-title">➕ Thêm lớp học</h3>
+            <button class="popup-close" onclick="closePopup('addClassPopup')">&times;</button>
+        </div>
+        <form id="addClassForm" onsubmit="submitAddClass(event)">
+            <div class="info-grid">
+                <div class="info-label required">Tên lớp</div>
+                <div>
+                    <input class="info-value" type="text" id="newClassName" name="className" required placeholder="VD: Lớp 6, Lớp 7...">
+                </div>
+            </div>
+            <div id="addClassError" class="alert alert-error" style="display: none; margin-top: 16px;"></div>
+            <div id="addClassSuccess" class="alert alert-success" style="display: none; margin-top: 16px;"></div>
+            <div style="margin-top: 20px; display: flex; gap: 8px; justify-content: flex-end;">
+                <button type="button" class="btn" onclick="closePopup('addClassPopup')">Hủy</button>
+                <button type="submit" class="btn primary">➕ Thêm lớp</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Popup Thêm Môn Học -->
+<div id="addSubjectPopup" class="popup-overlay" onclick="closePopupOnOverlay(event, 'addSubjectPopup')">
+    <div class="popup-content popup-small">
+        <div class="popup-header">
+            <h3 class="popup-title">➕ Thêm môn học</h3>
+            <button class="popup-close" onclick="closePopup('addSubjectPopup')">&times;</button>
+        </div>
+        <form id="addSubjectForm" onsubmit="submitAddSubject(event)">
+            <div class="info-grid">
+                <div class="info-label required">Tên môn học</div>
+                <div>
+                    <input class="info-value" type="text" id="newSubjectName" name="subjectName" required placeholder="VD: Toán, Văn, Anh...">
+                </div>
+            </div>
+            <div id="addSubjectError" class="alert alert-error" style="display: none; margin-top: 16px;"></div>
+            <div id="addSubjectSuccess" class="alert alert-success" style="display: none; margin-top: 16px;"></div>
+            <div style="margin-top: 20px; display: flex; gap: 8px; justify-content: flex-end;">
+                <button type="button" class="btn" onclick="closePopup('addSubjectPopup')">Hủy</button>
+                <button type="submit" class="btn primary">➕ Thêm môn</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Popup Thêm Học Sinh vào Môn Học -->
+<div id="addStudentPopup" class="popup-overlay" onclick="closePopupOnOverlay(event, 'addStudentPopup')">
+    <div class="popup-content popup-large">
+        <div class="popup-header">
+            <h3 class="popup-title">➕ Thêm học sinh vào môn học</h3>
+            <button class="popup-close" onclick="closePopup('addStudentPopup')">&times;</button>
+        </div>
+
+        <!-- Thanh tìm kiếm -->
+        <div class="search-box">
+            <input type="text" id="studentSearchInput" class="info-value" placeholder="🔍 Nhập tên học sinh để tìm kiếm..." oninput="debounceSearch()">
+        </div>
+
+        <!-- Số học sinh đã chọn -->
+        <div class="selected-count">
+            Đã chọn: <span id="selectedCount">0</span> học sinh
+        </div>
+
+        <!-- Danh sách học sinh có thể thêm -->
+        <div class="student-list-container">
+            <table class="student-table student-select-table">
+                <thead>
+                <tr>
+                    <th style="width: 50px;">
+                        <input type="checkbox" id="selectAllStudents" onchange="toggleSelectAll()">
+                    </th>
+                    <th>CCCD</th>
+                    <th>Họ và tên</th>
+                    <th>SĐT</th>
+                </tr>
+                </thead>
+                <tbody id="availableStudentTableBody">
+                <tr>
+                    <td colspan="4" class="empty-row">Đang tải danh sách học sinh...</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="addStudentError" class="alert alert-error" style="display: none; margin-top: 16px;"></div>
+        <div id="addStudentSuccess" class="alert alert-success" style="display: none; margin-top: 16px;"></div>
+
+        <div style="margin-top: 20px; display: flex; gap: 8px; justify-content: flex-end;">
+            <button type="button" class="btn" onclick="closePopup('addStudentPopup')">Hủy</button>
+            <button type="button" class="btn primary" id="confirmAddStudents" onclick="submitAddStudents()">➕ Thêm học sinh đã chọn</button>
+        </div>
+    </div>
+</div>
+
+<div id="removeStudentPopup" class="popup-overlay" onclick="closePopupOnOverlay(event, 'removeStudentPopup')">
+    <div class="popup-content popup-small">
+        <div class="popup-header">
+            <h3 class="popup-title">⚠️ Xác nhận xóa học sinh</h3>
+            <button class="popup-close" onclick="closePopup('removeStudentPopup')">&times;</button>
+        </div>
+        <div class="popup-body">
+            <p>Bạn có chắc chắn muốn xóa học sinh <strong id="removeStudentName"></strong> khỏi môn học này?</p>
+            <input type="hidden" id="removeStudentCitizenId">
+        </div>
+        <div id="removeStudentError" class="alert alert-error" style="display: none; margin-top: 16px;"></div>
+        <div id="removeStudentSuccess" class="alert alert-success" style="display: none; margin-top: 16px;"></div>
+        <div style="margin-top: 20px; display: flex; gap: 8px; justify-content: flex-end;">
+            <button type="button" class="btn" onclick="closePopup('removeStudentPopup')">Hủy</button>
+            <button type="button" class="btn danger" onclick="submitRemoveStudent()">🗑️ Xóa</button>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/app.js}"></script>
+<script th:src="@{/js/common.js}"></script>
+<script th:src="@{/js/classes.js}"></script>
+<script th:inline="javascript">
+    // Auto load classes khi trang được tải nếu đã chọn năm học
+    document.addEventListener('DOMContentLoaded', function() {
+        const yearSelect = document.getElementById('academicYearSelect');
+        if (yearSelect.value) {
+            loadClasses();
+        }
+    });
+</script>
+</body>
+</html>

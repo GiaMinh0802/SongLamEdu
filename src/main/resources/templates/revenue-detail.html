@@ -81,6 +81,33 @@
                     </div>
 
                     <div class="info-grid">
+                        <div class="info-label">Năm học:</div>
+                        <div>
+                            <div class="info-value" data-view th:text="*{academicYearName}">-</div>
+                            <input data-edit class="info-value hidden" type="text" th:field="*{academicYearName}" readonly style="background: #f3f4f6; cursor: not-allowed;" />
+                            <small data-edit class="note">⚠️ Năm học không thể thay đổi</small>
+                        </div>
+                    </div>
+
+                    <div class="info-grid">
+                        <div class="info-label">Lớp học:</div>
+                        <div>
+                            <div class="info-value" data-view th:text="*{className}">-</div>
+                            <input data-edit class="info-value hidden" type="text" th:field="*{className}" readonly style="background: #f3f4f6; cursor: not-allowed;" />
+                            <small data-edit class="note">⚠️ Lớp học không thể thay đổi</small>
+                        </div>
+                    </div>
+
+                    <div class="info-grid">
+                        <div class="info-label">Môn học:</div>
+                        <div>
+                            <div class="info-value" data-view th:text="*{subjectName}">-</div>
+                            <input data-edit class="info-value hidden" type="text" th:field="*{subjectName}" readonly style="background: #f3f4f6; cursor: not-allowed;" />
+                            <small data-edit class="note">⚠️ Môn học học không thể thay đổi</small>
+                        </div>
+                    </div>
+
+                    <div class="info-grid">
                         <div class="info-label">Họ và tên người thu tiền:</div>
                         <div>
                             <div class="info-value" data-view th:text="*{cashierName}">-</div>
@@ -127,17 +154,6 @@
                         <div>
                             <div class="info-value" data-view th:text="*{note}">-</div>
                             <input data-edit class="info-value hidden" type="text" th:field="*{note}" />
-                        </div>
-                    </div>
-
-                    <div class="info-grid">
-                        <div class="info-label">Trạng thái:</div>
-                        <div>
-                            <div class="info-value" data-view th:text="*{status} == '1' ? 'Hoạt động' : 'Đã hủy'">-</div>
-                            <select data-edit class="info-value hidden" id="isActive" th:field="*{status}" required>
-                                <option value="1">Hoạt động</option>
-                                <option value="0">Đã hủy</option>
-                            </select>
                         </div>
                     </div>
                 </div>

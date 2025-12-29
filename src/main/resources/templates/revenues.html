@@ -21,37 +21,41 @@
             <div class="info-section">
                 <h2 class="info-section-title">Tìm kiếm</h2>
 
-                <form id="searchForm" th:action="@{/transactions/revenues}" th:object="${dto}" method="get" class="info-grid">
-                    <div class="info-label">Mã phiếu</div>
-                    <div>
-                        <input class="info-value" type="text" id="codeInput" name="transactionId" th:field="*{transactionId}">
+                <form id="searchForm" th:action="@{/transactions/revenues}" th:object="${dto}" method="get" class="search-form-grid">
+                    <!-- Row 1: Mã phiếu, Tên học sinh, Tên thủ quỹ -->
+                    <div class="search-row">
+                        <div class="search-field">
+                            <label class="search-label">Mã phiếu</label>
+                            <input class="search-input" type="text" id="codeInput" name="transactionId" th:field="*{transactionId}">
+                        </div>
+                        <div class="search-field">
+                            <label class="search-label">Tên học sinh</label>
+                            <input class="search-input" type="text" id="studentInput" name="studentName" th:field="*{studentName}">
+                        </div>
+                        <div class="search-field">
+                            <label class="search-label">Tên thủ quỹ</label>
+                            <input class="search-input" type="text" id="cashierInput" name="cashierName" th:field="*{cashierName}">
+                        </div>
                     </div>
 
-                    <div class="info-label">Tên học sinh</div>
-                    <div>
-                        <input class="info-value" type="text" id="studentInput" name="studentName" th:field="*{studentName}">
+                    <!-- Row 2: Từ ngày, Đến ngày -->
+                    <div class="search-row search-row-2">
+                        <div class="search-field">
+                            <label class="search-label">Từ ngày</label>
+                            <input class="search-input datepicker datepicker-input" type="text" id="fromInput" name="dateFrom" th:field="*{dateFrom}" placeholder="dd/MM/yyyy">
+                        </div>
+                        <div class="search-field">
+                            <label class="search-label">Đến ngày</label>
+                            <input class="search-input datepicker datepicker-input" type="text" id="toInput" name="dateTo" th:field="*{dateTo}" placeholder="dd/MM/yyyy">
+                        </div>
                     </div>
 
-                    <div class="info-label">Tên thủ quỹ</div>
-                    <div>
-                        <input class="info-value" type="text" id="cashierInput" name="cashierName" th:field="*{cashierName}">
-                    </div>
-
-                    <div class="info-label">Từ ngày</div>
-                    <div>
-                        <input class="info-value datepicker datepicker-input" type="text" id="fromInput" name="dateFrom" th:field="*{dateFrom}" placeholder="dd/MM/yyyy">
-                    </div>
-
-                    <div class="info-label">Đến ngày</div>
-                    <div>
-                        <input class="info-value datepicker datepicker-input" type="text" id="toInput" name="dateTo" th:field="*{dateTo}" placeholder="dd/MM/yyyy">
-                    </div>
-
-                    <div class="info-label"></div>
-                    <div class="search-actions">
-                        <button type="button" class="btn primary" sec:authorize="hasRole('CASHIER')" onclick="openCreateRevenuePopup()">➕ Tạo phiếu thu</button>
-                        <button sec:authorize="hasRole('ADMIN')"></button>
-                        <div class="search-buttons">
+                    <!-- Row 3: Buttons -->
+                    <div class="search-actions-row">
+                        <div class="search-actions-left">
+                            <button type="button" class="btn primary" sec:authorize="hasRole('CASHIER')" onclick="openCreateRevenuePopup()">➕ Tạo phiếu thu</button>
+                        </div>
+                        <div class="search-actions-right">
                             <button type="submit" class="btn primary">🔎 Tìm kiếm</button>
                             <button type="button" class="btn" onclick="clearSearchFilters()">❌ Xóa lọc</button>
                         </div>
@@ -74,7 +78,8 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:classappend="${!t.isActive} ? 'unactive'" th:each="t : ${revenues}">
+                        <tr th:each="t : ${revenues}" style="cursor: pointer;"
+                            th:onclick="|window.open('@{/transactions/revenues/view/{id}(id=${t.transactionNumber})}', '_blank')|">
                             <td th:text="${t.transactionNumber}"></td>
                             <td th:text="${t.dateOfRecorded != null ? #temporals.format(t.dateOfRecorded, 'dd/MM/yyyy') : ''}"></td>
                             <td th:text="${t.student != null ? t.student.person.fullName : ''}"></td>
@@ -82,15 +87,56 @@
                             <td th:text="${t.cashier != null ? t.cashier.person.fullName : ''}"></td>
                             <td class="action">
                                 <button type="button" class="btn btn-sm primary" th:onclick="|window.location.href='@{/transactions/revenues/detail/{id}(id=${t.transactionNumber})}'|">Chi tiết</button>
-                                <button type="button" class="btn btn-sm primary" th:if="${t.isActive}" th:onclick="|window.open('@{/transactions/revenues/view/{id}(id=${t.transactionNumber})}', '_blank')|">Xem phiếu</button>
-                                <button type="button" class="btn btn-sm primary" th:if="${t.isActive}" th:onclick="|window.location.href='@{/transactions/revenues/download/{id}(id=${t.transactionNumber})}'|">Xuất phiếu</button>
+                                <button type="button" class="btn btn-sm primary" th:onclick="|window.location.href='@{/transactions/revenues/download/{id}(id=${t.transactionNumber})}'|">Xuất phiếu</button>
                             </td>
                         </tr>
-                        <tr th:if="${revenues == null || revenues.totalElements == 0}">
+                        <tr th:if="${totalPages == 0}">
                             <td colspan="6" class="empty-row">Không có dữ liệu</td>
                         </tr>
                         </tbody>
                     </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination-container" th:if="${revenues != null && revenues.totalPages > 0}">
+                    <div class="pagination-info">
+                        Hiển thị <span th:text="${revenues.numberOfElements}">0</span> / <span th:text="${revenues.totalElements}">0</span> phiếu thu
+                    </div>
+                    <div class="pagination">
+                        <a th:href="@{/transactions/revenues(page=0, size=${pageSize}, transactionId=${dto.transactionId}, studentName=${dto.studentName}, cashierName=${dto.cashierName}, dateFrom=${dto.dateFrom}, dateTo=${dto.dateTo})}"
+                           th:classappend="${currentPage == 0} ? 'disabled'" class="pagination-btn">
+                            ⏮
+                        </a>
+                        <a th:href="@{/transactions/revenues(page=${currentPage - 1}, size=${pageSize}, transactionId=${dto.transactionId}, studentName=${dto.studentName}, cashierName=${dto.cashierName}, dateFrom=${dto.dateFrom}, dateTo=${dto.dateTo})}"
+                           th:classappend="${currentPage == 0} ? 'disabled'" class="pagination-btn">
+                            ◀
+                        </a>
+
+                        <th:block th:each="i : ${#numbers.sequence(0, revenues.totalPages - 1)}">
+                            <a th:if="${i >= currentPage - 2 and i <= currentPage + 2}"
+                               th:href="@{/transactions/revenues(page=${i}, size=${pageSize}, transactionId=${dto.transactionId}, studentName=${dto.studentName}, cashierName=${dto.cashierName}, dateFrom=${dto.dateFrom}, dateTo=${dto.dateTo})}"
+                               th:text="${i + 1}"
+                               th:classappend="${i == currentPage} ? 'active'"
+                               class="pagination-btn"></a>
+                        </th:block>
+
+                        <a th:href="@{/transactions/revenues(page=${currentPage + 1}, size=${pageSize}, transactionId=${dto.transactionId}, studentName=${dto.studentName}, cashierName=${dto.cashierName}, dateFrom=${dto.dateFrom}, dateTo=${dto.dateTo})}"
+                           th:classappend="${currentPage >= revenues.totalPages - 1} ? 'disabled'" class="pagination-btn">
+                            ▶
+                        </a>
+                        <a th:href="@{/transactions/revenues(page=${revenues.totalPages - 1}, size=${pageSize}, transactionId=${dto.transactionId}, studentName=${dto.studentName}, cashierName=${dto.cashierName}, dateFrom=${dto.dateFrom}, dateTo=${dto.dateTo})}"
+                           th:classappend="${currentPage >= revenues.totalPages - 1} ? 'disabled'" class="pagination-btn">
+                            ⏭
+                        </a>
+                    </div>
+                    <div class="pagination-size">
+                        <label>Hiển thị:</label>
+                        <select onchange="changePageSize(this.value)">
+                            <option value="10" th:selected="${pageSize == 10}">10</option>
+                            <option value="20" th:selected="${pageSize == 20}">20</option>
+                            <option value="50" th:selected="${pageSize == 50}">50</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
@@ -104,26 +150,63 @@
             <button class="popup-close" onclick="closeCreateRevenuePopup()">&times;</button>
         </div>
 
-        <form th:action="@{/transactions/revenues}" method="post">
+        <form th:action="@{/transactions/revenues}" method="post" id="createRevenueForm">
             <div class="info-grid">
+                <div class="info-label required">Năm học</div>
+                <div>
+                    <select class="info-value" id="revenueYearSelect" name="yearId" required onchange="loadRevenueClasses()">
+                        <option value="">-- Chọn năm học --</option>
+                    </select>
+                </div>
+
+                <div class="info-label required">Lớp học</div>
+                <div>
+                    <select class="info-value" id="revenueClassSelect" name="classId" required onchange="loadRevenueSubjects()">
+                        <option value="">-- Chọn lớp học --</option>
+                    </select>
+                </div>
+
+                <div class="info-label required">Môn học</div>
+                <div>
+                    <select class="info-value" id="revenueSubjectSelect" name="subjectId" required onchange="onFilterChange();">
+                        <option value="">-- Chọn môn học --</option>
+                    </select>
+                </div>
+
+                <div class="info-label">Tìm học sinh</div>
+                <div class="autocomplete-container">
+                    <input class="info-value" type="text" id="studentSearchInput"
+                           placeholder="Nhập CCCD hoặc họ tên..."
+                           autocomplete="off"
+                           oninput="debounceStudentSearch()">
+                    <div id="studentSuggestions" class="suggestions-dropdown"></div>
+                </div>
+
                 <div class="info-label required">CCCD học sinh</div>
                 <div>
-                    <input class="info-value" type="text" name="studentId" maxlength="15" required th:value="${param.id}">
-                    <small class="note">Nhập CCCD của học sinh</small>
+                    <input class="info-value" type="text" id="studentIdInput" name="studentId" maxlength="15" required readonly>
+                </div>
+
+                <div class="info-label required">Họ tên học sinh</div>
+                <div>
+                    <input class="info-value" type="text" id="studentNameInput" required readonly>
                 </div>
 
                 <div class="info-label required">Số tiền</div>
                 <div>
-                    <input class="info-value" type="text" id="amountInput" name="amountDisplay" placeholder="VD: 1.000.000" required>
+                    <input class="info-value" type="text" id="amountInput" name="amountDisplay" placeholder="VD: 1.000.000" required oninput="formatAmountInput(this)">
                     <input type="hidden" name="amount" id="amountHidden">
                     <small class="note">Nhập số tiền bằng VNĐ</small>
                 </div>
 
                 <div class="info-label required">Lý do nộp</div>
                 <div>
-                    <input class="info-value" type="text" name="reason" placeholder="VD: Học phí tháng 12/2024" required>
+                    <input class="info-value" type="text" id="reasonInput" name="reason" placeholder="VD: Học phí tháng 12/2024" required>
                 </div>
             </div>
+
+            <div id="createRevenueError" class="alert alert-error" style="display: none; margin-top: 16px;"></div>
+
             <div style="margin-top: 20px; display: flex; gap: 8px; justify-content: flex-end;">
                 <button type="button" class="btn" onclick="closeCreateRevenuePopup()">Hủy</button>
                 <button type="submit" class="btn primary">💰 Tạo phiếu thu</button>
@@ -131,6 +214,7 @@
         </form>
     </div>
 </div>
+
 
 <script th:src="@{/js/datepicker.js}"></script>
 <script defer th:src="@{/js/app.js}"></script>

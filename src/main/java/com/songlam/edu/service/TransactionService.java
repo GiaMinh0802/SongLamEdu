@@ -2,13 +2,8 @@ package com.songlam.edu.service;
 
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.songlam.edu.dto.TransactionDTO;
-import com.songlam.edu.entity.BusinessInfo;
-import com.songlam.edu.entity.Student;
-import com.songlam.edu.entity.Transaction;
-import com.songlam.edu.entity.User;
-import com.songlam.edu.repository.StudentRepository;
-import com.songlam.edu.repository.TransactionRepository;
-import com.songlam.edu.repository.UserRepository;
+import com.songlam.edu.entity.*;
+import com.songlam.edu.repository.*;
 import com.songlam.edu.util.CurrencyUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -34,6 +29,9 @@ public class TransactionService {
     private final UserRepository userRepository;
     private final CompanyInfoService companyInfoService;
     private final TemplateEngine templateEngine;
+    private final AcademicYearRepository academicYearRepository;
+    private final SchoolClassRepository schoolClassRepository;
+    private final SubjectRepository subjectRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -42,16 +40,19 @@ public class TransactionService {
                               StudentRepository studentRepository,
                               UserRepository userRepository,
                               CompanyInfoService companyInfoService,
-                              TemplateEngine templateEngine) {
+                              TemplateEngine templateEngine, AcademicYearRepository academicYearRepository, SchoolClassRepository schoolClassRepository, SubjectRepository subjectRepository) {
         this.transactionRepository = transactionRepository;
         this.studentRepository = studentRepository;
         this.userRepository = userRepository;
         this.companyInfoService = companyInfoService;
         this.templateEngine = templateEngine;
+        this.academicYearRepository = academicYearRepository;
+        this.schoolClassRepository = schoolClassRepository;
+        this.subjectRepository = subjectRepository;
     }
 
     public Page<Transaction> search(TransactionDTO dto, Integer page, Integer size) {
-        Pageable pageable = PageRequest.of(page == null || page < 0 ? 0 : page, size == null || size <= 0 ? 20 : size);
+        Pageable pageable = PageRequest.of(page == null || page < 0 ? 0 : page, size == null || size <= 0 ? 10 : size);
         return transactionRepository.search(
                 emptyToNull(dto.getTransactionId()),
                 emptyToNull(dto.getStudentName()),
@@ -66,13 +67,23 @@ public class TransactionService {
     }
 
     @Transactional
-    public void createRevenue(String studentCitizenId, String reason, BigDecimal amount, String cashierEmail) {
+    public void createRevenue(String studentCitizenId, String reason, BigDecimal amount, String cashierEmail,
+                              Long yearId, Long classId, Long subjectId) {
 
         Student student = studentRepository.findById(studentCitizenId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy học sinh"));
 
         User cashier = userRepository.findByPersonEmail(cashierEmail)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thủ quỹ"));
+
+        AcademicYear academicYear = academicYearRepository.findById(yearId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy năm học"));
+
+        SchoolClass schoolClass = schoolClassRepository.findById(classId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lớp học"));
+
+        Subject subject = subjectRepository.findById(subjectId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy môn học"));
 
         String code = generateNextCode();
         Transaction tx = new Transaction();
@@ -82,7 +93,11 @@ public class TransactionService {
         tx.setStudent(student);
         tx.setReason(reason);
         tx.setAmount(amount);
+        tx.setAcademicYear(academicYear);
+        tx.setSchoolClass(schoolClass);
+        tx.setSubject(subject);
         tx.setCashier(cashier);
+        tx.setType("PT");
         transactionRepository.save(tx);
     }
 
@@ -93,7 +108,6 @@ public class TransactionService {
         tx.setAttachments(dto.getAttachments());
         tx.setSourceDocuments(dto.getSourceDocuments());
         tx.setNote(dto.getNote());
-        tx.setIsActive(dto.getStatus().equals("1"));
         transactionRepository.save(tx);
     }
 
@@ -118,6 +132,8 @@ public class TransactionService {
         context.setVariable("signatureDay", transaction.getDateOfRecorded().getDayOfMonth());
         context.setVariable("signatureMonth", transaction.getDateOfRecorded().getMonthValue());
         context.setVariable("signatureYear", transaction.getDateOfRecorded().getYear());
+        context.setVariable("representativeName", businessInfo.getPerson().getFullName());
+        context.setVariable("cashierName", transaction.getCashier().getPerson().getFullName());
 
         String html = templateEngine.process("sample/receipt_template", context);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -146,6 +162,7 @@ public class TransactionService {
     public TransactionDTO toDTO(Transaction tx) {
         TransactionDTO dto = new TransactionDTO();
         dto.setTransactionId(tx.getTransactionNumber());
+        dto.setType(tx.getType());
         dto.setStudentName(tx.getStudent().getPerson().getFullName());
         dto.setCashierName(tx.getCashier().getPerson().getFullName());
         dto.setDateOfRecorded(tx.getDateOfRecorded());
@@ -155,7 +172,15 @@ public class TransactionService {
         dto.setAttachments(tx.getAttachments());
         dto.setSourceDocuments(tx.getSourceDocuments());
         dto.setNote(tx.getNote());
-        dto.setStatus(tx.getIsActive() ? "1" : "0");
+        if (tx.getAcademicYear() != null) {
+            dto.setAcademicYearName(tx.getAcademicYear().getName());
+        }
+        if (tx.getSchoolClass() != null) {
+            dto.setClassName(tx.getSchoolClass().getClassName());
+        }
+        if (tx.getSubject() != null) {
+            dto.setSubjectName(tx.getSubject().getSubjectName());
+        }
         return dto;
     }
 

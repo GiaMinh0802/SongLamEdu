@@ -1,9 +1,9 @@
 package com.songlam.edu.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -15,16 +15,12 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class User {
 
     @Id
     @Column(name = "citizen_id", length = 15)
     private String citizenId;
 
-    @JsonIgnore
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
@@ -34,24 +30,17 @@ public class User {
     @Column(name = "is_active")
     private Boolean isActive = false;
 
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId
-    @JoinColumn(name = "citizen_id", referencedColumnName = "citizen_id")
+    @JoinColumn(name = "citizen_id")
     private Person person;
 
-    @JsonIgnore
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "cashier", cascade = CascadeType.ALL)
     private List<Transaction> transactions;
 
     @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 }
