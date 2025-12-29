@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 @Repository
@@ -32,5 +33,13 @@ public interface UserRepository extends JpaRepository<User, String> {
             @Param("fullName") String fullName,
             @Param("phone") String phone,
             Pageable pageable
+    );
+
+    Optional<User> findByCitizenIdAndPerson_FullNameAndPerson_DateOfBirthAndPerson_PhoneAndPerson_Email(
+            String citizenId,
+            String fullName,
+            LocalDate dateOfBirth,
+            String phone,
+            String email
     );
 }

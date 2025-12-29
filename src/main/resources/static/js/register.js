@@ -9,6 +9,23 @@ document.addEventListener('DOMContentLoaded', function() {
     const passwordInput = document.getElementById('password');
     const confirmPasswordInput = document.getElementById('confirmPassword');
 
+    // Toggle password visibility
+    document.querySelectorAll('.toggle-password').forEach(button => {
+        button.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            const input = document.getElementById(targetId);
+            const eyeIcon = this.querySelector('.eye-icon');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                eyeIcon.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                eyeIcon.textContent = '👁';
+            }
+        });
+    });
+
     // CCCD validation
     citizenIdInput.addEventListener('blur', function() {
         const re = /^\d{12}$/;
@@ -82,22 +99,22 @@ document.addEventListener('DOMContentLoaded', function() {
     // Password validation
     passwordInput.addEventListener('blur', function() {
         if (this.value.trim() === '') {
-            addValidationFeedback(this, false, 'Mật khẩu không được để trống');
+            addValidationFeedbackWrapper(this.parentElement, false, 'Mật khẩu không được để trống');
         } else if (!validatePassword(this.value)) {
-            addValidationFeedback(this, false, 'Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số');
+            addValidationFeedbackWrapper(this.parentElement, false, 'Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số');
         } else {
-            removeValidationFeedback(this);
+            removeValidationFeedbackWrapper(this.parentElement);
         }
     });
 
     // Confirm password validation
     confirmPasswordInput.addEventListener('blur', function() {
         if (this.value.trim() === '') {
-            addValidationFeedback(this, false, 'Vui lòng xác nhận mật khẩu');
+            addValidationFeedbackWrapper(this.parentElement, false, 'Vui lòng xác nhận mật khẩu');
         } else if (this.value !== passwordInput.value) {
-            addValidationFeedback(this, false, 'Mật khẩu xác nhận không khớp');
+            addValidationFeedbackWrapper(this.parentElement, false, 'Mật khẩu xác nhận không khớp');
         } else {
-            removeValidationFeedback(this);
+            removeValidationFeedbackWrapper(this.parentElement);
         }
     });
 
@@ -105,9 +122,9 @@ document.addEventListener('DOMContentLoaded', function() {
     passwordInput.addEventListener('input', function() {
         if (confirmPasswordInput.value !== '') {
             if (confirmPasswordInput.value !== this.value) {
-                addValidationFeedback(confirmPasswordInput, false, 'Mật khẩu xác nhận không khớp');
+                addValidationFeedbackWrapper(confirmPasswordInput.parentElement, false, 'Mật khẩu xác nhận không khớp');
             } else {
-                removeValidationFeedback(confirmPasswordInput);
+                removeValidationFeedbackWrapper(confirmPasswordInput.parentElement);
             }
         }
     });
@@ -148,12 +165,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (passwordInput.value.trim() === '' || !validatePassword(passwordInput.value)) {
-            addValidationFeedback(passwordInput, false, 'Mật khẩu không hợp lệ');
+            addValidationFeedbackWrapper(passwordInput.parentElement, false, 'Mật khẩu không hợp lệ');
             isValid = false;
         }
 
         if (confirmPasswordInput.value !== passwordInput.value) {
-            addValidationFeedback(confirmPasswordInput, false, 'Mật khẩu xác nhận không khớp');
+            addValidationFeedbackWrapper(confirmPasswordInput.parentElement, false, 'Mật khẩu xác nhận không khớp');
             isValid = false;
         }
 
@@ -181,4 +198,27 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => alert.remove(), 500);
         }, 5000);
     });
+
+    // Helper functions for password wrapper
+    function addValidationFeedbackWrapper(wrapper, isValid, message) {
+        const formGroup = wrapper.closest('.form-group');
+        let feedback = formGroup.querySelector('.validation-feedback');
+
+        if (!feedback) {
+            feedback = document.createElement('small');
+            feedback.className = 'validation-feedback';
+            formGroup.appendChild(feedback);
+        }
+
+        feedback.textContent = message;
+        feedback.className = isValid ? 'validation-feedback success' : 'validation-feedback error';
+        wrapper.querySelector('input').className = isValid ? 'success' : 'error';
+    }
+
+    function removeValidationFeedbackWrapper(wrapper) {
+        const formGroup = wrapper.closest('.form-group');
+        const feedback = formGroup.querySelector('.validation-feedback');
+        if (feedback) feedback.remove();
+        wrapper.querySelector('input').className = '';
+    }
 });
