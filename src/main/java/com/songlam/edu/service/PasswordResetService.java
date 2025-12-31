@@ -91,9 +91,7 @@ public class PasswordResetService {
         user.setPasswordHash(passwordEncoder.encode(dto.getNewPassword()));
         userRepository.save(user);
 
-        // Mark token as used
-        resetToken.setUsed(true);
-        tokenRepository.save(resetToken);
+        tokenRepository.delete(resetToken);
     }
 
     private boolean isValidPassword(String password) {
