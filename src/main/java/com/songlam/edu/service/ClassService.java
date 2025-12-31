@@ -6,13 +6,16 @@ import com.songlam.edu.entity.*;
 import com.songlam.edu.repository.*;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -64,7 +67,6 @@ public class ClassService {
     public void createClass(SchoolClassDTO dto) {
         String className = dto.getClassName().trim();
 
-        // Lấy năm học hiện tại và các năm học sau
         List<AcademicYear> targetYears = getCurrentAndFutureAcademicYears();
 
         if (targetYears.isEmpty()) {
@@ -72,7 +74,6 @@ public class ClassService {
         }
 
         for (AcademicYear year : targetYears) {
-            // Kiểm tra xem lớp đã tồn tại chưa trong năm học này
             if (!schoolClassRepository.existsByClassNameAndAcademicYearId(className, year.getId())) {
                 SchoolClass schoolClass = new SchoolClass();
                 schoolClass.setClassName(className);
@@ -86,18 +87,15 @@ public class ClassService {
     public void createSubject(SubjectDTO dto) {
         String subjectName = dto.getSubjectName().trim();
 
-        // Lấy năm học hiện tại và các năm học sau
         List<AcademicYear> targetYears = getCurrentAndFutureAcademicYears();
 
         if (targetYears.isEmpty()) {
             throw new IllegalArgumentException("Không tìm thấy năm học phù hợp!");
         }
 
-        // Lấy tất cả lớp học trong các năm học hiện tại và tương lai
         for (AcademicYear year : targetYears) {
             List<SchoolClass> classes = schoolClassRepository.findByAcademicYearId(year.getId());
             for (SchoolClass schoolClass : classes) {
-                // Kiểm tra xem môn học đã tồn tại chưa trong lớp này
                 if (!subjectRepository.existsBySubjectNameAndSchoolClassId(subjectName, schoolClass.getId())) {
                     Subject subject = new Subject();
                     subject.setSubjectName(subjectName);
@@ -117,6 +115,34 @@ public class ClassService {
         String searchName = (fullName != null && !fullName.trim().isEmpty()) ? fullName.trim() : null;
 
         return studentRepository.searchActiveStudentsNotInSubject(searchName, subjectId, pageable);
+    }
+
+    public Page<Map<String, Object>> searchStudentsInSubject(
+            Long subjectId, String citizenId, String fullName, String phone, int page, int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Student> studentPage = studentRepository.findBySubjectIdAndFilters(
+                subjectId,
+                citizenId != null ? citizenId.trim() : null,
+                fullName != null ? fullName.trim() : null,
+                phone != null ? phone.trim() : null,
+                pageable);
+
+        List<Map<String, Object>> students = studentPage.getContent().stream()
+                .map(student -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("citizenId", student.getCitizenId());
+                    map.put("fullName", student.getPerson().getFullName());
+                    map.put("dateOfBirth", student.getPerson().getDateOfBirth());
+                    map.put("sex", student.getPerson().getSex());
+                    map.put("phone", student.getPerson().getPhone());
+                    map.put("status", student.getStatus());
+                    return map;
+                })
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(students, pageable, studentPage.getTotalElements());
     }
 
     @Transactional

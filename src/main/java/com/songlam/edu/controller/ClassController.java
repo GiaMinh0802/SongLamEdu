@@ -93,6 +93,29 @@ public class ClassController {
         return ResponseEntity.ok(result);
     }
 
+    @GetMapping("/api/students/searchInSubject")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> searchStudentsInSubject(
+            @RequestParam Long subjectId,
+            @RequestParam(required = false) String citizenId,
+            @RequestParam(required = false) String fullName,
+            @RequestParam(required = false) String phone,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Page<Map<String, Object>> studentPage = classService.searchStudentsInSubject(
+                subjectId, citizenId, fullName, phone, page, size);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("content", studentPage.getContent());
+        response.put("currentPage", studentPage.getNumber());
+        response.put("totalItems", studentPage.getTotalElements());
+        response.put("totalPages", studentPage.getTotalPages());
+        response.put("pageSize", studentPage.getSize());
+
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/api/students/search")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> searchStudentsForSubject(
@@ -107,6 +130,7 @@ public class ClassController {
             Map<String, Object> map = new HashMap<>();
             map.put("citizenId", s.getCitizenId());
             map.put("fullName", s.getPerson() != null ? s.getPerson().getFullName() : "");
+            map.put("dateOfBirth", s.getPerson() != null ? s.getPerson().getDateOfBirth() : null);
             map.put("phone", s.getPerson() != null ? s.getPerson().getPhone() : "");
             return map;
         }).toList();

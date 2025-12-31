@@ -31,6 +31,35 @@ public interface StudentRepository extends JpaRepository<Student, String> {
         SELECT s.*
         FROM students s
         JOIN person p ON s.citizen_id = p.citizen_id
+        JOIN student_subjects ss ON s.citizen_id = ss.student_id
+        WHERE ss.subject_id = :subjectId
+          AND (:citizenId IS NULL OR s.citizen_id LIKE CONCAT('%', :citizenId, '%'))
+          AND (:fullName IS NULL OR LOWER(p.full_name) LIKE LOWER(CONCAT('%', :fullName, '%')))
+          AND (:phone IS NULL OR p.phone LIKE CONCAT('%', :phone, '%'))
+        ORDER BY p.updated_at DESC
+        """,
+                countQuery = """
+        SELECT COUNT(s.citizen_id)
+        FROM students s
+        JOIN person p ON s.citizen_id = p.citizen_id
+        JOIN student_subjects ss ON s.citizen_id = ss.student_id
+        WHERE ss.subject_id = :subjectId
+          AND (:citizenId IS NULL OR s.citizen_id LIKE CONCAT('%', :citizenId, '%'))
+          AND (:fullName IS NULL OR LOWER(p.full_name) LIKE LOWER(CONCAT('%', :fullName, '%')))
+          AND (:phone IS NULL OR p.phone LIKE CONCAT('%', :phone, '%'))
+        """, nativeQuery = true)
+    Page<Student> findBySubjectIdAndFilters(
+            @Param("subjectId") Long subjectId,
+            @Param("citizenId") String citizenId,
+            @Param("fullName") String fullName,
+            @Param("phone") String phone,
+            Pageable pageable
+    );
+
+    @Query(value = """
+        SELECT s.*
+        FROM students s
+        JOIN person p ON s.citizen_id = p.citizen_id
         WHERE s.status = 1
           AND (:fullName IS NULL OR LOWER(p.full_name) LIKE LOWER(CONCAT('%', :fullName, '%')))
           AND s.citizen_id NOT IN (

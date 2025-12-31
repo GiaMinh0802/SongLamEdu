@@ -280,6 +280,203 @@ function submitAddSubject(event) {
         });
 }
 
+// ========== Search and Pagination Variables ==========
+let currentSearchParams = {
+    citizenId: '',
+    fullName: '',
+    phone: ''
+};
+let currentPage = 0;
+let currentPageSize = 5;
+let totalPages = 0;
+
+// ========== Search Functions ==========
+function searchStudents() {
+    currentSearchParams.citizenId = document.getElementById('searchCitizenId')?.value.trim() || '';
+    currentSearchParams.fullName = document.getElementById('searchFullName')?.value.trim() || '';
+    currentSearchParams.phone = document.getElementById('searchPhone')?.value.trim() || '';
+    currentPage = 0;
+    loadStudentsWithPagination();
+}
+
+function clearStudentSearchFilters() {
+    document.getElementById('searchCitizenId').value = '';
+    document.getElementById('searchFullName').value = '';
+    document.getElementById('searchPhone').value = '';
+    currentSearchParams = { citizenId: '', fullName: '', phone: '' };
+    currentPage = 0;
+    loadStudentsWithPagination();
+}
+
+function loadStudentsWithPagination() {
+    const subjectId = document.getElementById('subjectSelect').value;
+    const tbody = document.getElementById('studentTableBody');
+
+    updateAddStudentButton();
+
+    if (!subjectId) {
+        clearStudentTable();
+        hidePagination();
+        return;
+    }
+
+    // Show loading
+    tbody.innerHTML = `
+        <tr class="loading-row">
+            <td colspan="7">
+                <span class="loading-spinner"></span>
+                Đang tải dữ liệu...
+            </td>
+        </tr>
+    `;
+
+    // Build URL with search params
+    let url = `/classes/api/students/searchInSubject?subjectId=${subjectId}&page=${currentPage}&size=${currentPageSize}`;
+
+    if (currentSearchParams.citizenId) {
+        url += `&citizenId=${encodeURIComponent(currentSearchParams.citizenId)}`;
+    }
+    if (currentSearchParams.fullName) {
+        url += `&fullName=${encodeURIComponent(currentSearchParams.fullName)}`;
+    }
+    if (currentSearchParams.phone) {
+        url += `&phone=${encodeURIComponent(currentSearchParams.phone)}`;
+    }
+
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            const students = data.content || [];
+            totalPages = data.totalPages || 0;
+
+            if (students.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="empty-row">Không có học sinh trong môn học này</td></tr>';
+                hidePagination();
+                return;
+            }
+
+            tbody.innerHTML = '';
+            students.forEach(student => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${student.citizenId || '-'}</td>
+                    <td>${student.fullName || '-'}</td>
+                    <td>${formatDate(student.dateOfBirth)}</td>
+                    <td>
+                        <span class="badge ${student.sex === 1 ? 'badge-pink' : 'badge-blue'}">
+                            ${student.sex === 1 ? 'Nữ' : 'Nam'}
+                        </span>
+                    </td>
+                    <td>${student.phone || '-'}</td>
+                    <td>
+                        <span class="badge ${student.status === 1 ? 'badge-success' : 'badge-danger'}">
+                            ${student.status === 1 ? 'Đang học' : 'Thôi học'}
+                        </span>
+                    </td>
+                    <td class="action">
+                        ${currentUserRole === 'CASHIER' ? `<button type="button" class="btn btn-sm primary" onclick="openPaymentPopup('${student.citizenId}', '${student.fullName}')">Thu học phí</button>` : ''}
+                        ${currentUserRole === 'ADMIN' ? `<button type="button" class="btn btn-sm primary" onclick="confirmRemoveStudent('${student.citizenId}', '${student.fullName}')">Xóa</button>` : ''}
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // Update pagination
+            updatePagination(data);
+        })
+        .catch(error => {
+            console.error('Error loading students:', error);
+            tbody.innerHTML = '<tr><td colspan="7" class="empty-row">Có lỗi xảy ra khi tải dữ liệu</td></tr>';
+            hidePagination();
+        });
+}
+
+function updatePagination(data) {
+    const container = document.getElementById('paginationContainer');
+    if (!container) return;
+
+    if (data.totalPages <= 0) {
+        container.style.display = 'none';
+        return;
+    }
+
+    container.style.display = 'flex';
+
+    // Update info
+    document.getElementById('paginationShowing').textContent = data.content.length;
+    document.getElementById('paginationTotal').textContent = data.totalItems;
+
+    // Update page size select
+    document.getElementById('pageSizeSelect').value = currentPageSize;
+
+    // Build pagination buttons
+    const pagination = document.getElementById('paginationButtons');
+    pagination.innerHTML = '';
+
+    // First & Prev buttons
+    pagination.innerHTML += `
+        <button class="pagination-btn nav-btn ${currentPage === 0 ? 'disabled' : ''}" 
+                onclick="goToPage(0)" ${currentPage === 0 ? 'disabled' : ''}>⏮</button>
+        <button class="pagination-btn nav-btn ${currentPage === 0 ? 'disabled' : ''}" 
+                onclick="goToPage(${currentPage - 1})" ${currentPage === 0 ? 'disabled' : ''}>◀</button>
+    `;
+
+    // Page numbers
+    const startPage = Math.max(0, currentPage - 2);
+    const endPage = Math.min(data.totalPages - 1, currentPage + 2);
+
+    for (let i = startPage; i <= endPage; i++) {
+        pagination.innerHTML += `
+            <button class="pagination-btn ${i === currentPage ? 'active' : ''}" 
+                    onclick="goToPage(${i})">${i + 1}</button>
+        `;
+    }
+
+    // Next & Last buttons
+    pagination.innerHTML += `
+        <button class="pagination-btn nav-btn ${currentPage >= data.totalPages - 1 ? 'disabled' : ''}" 
+                onclick="goToPage(${currentPage + 1})" ${currentPage >= data.totalPages - 1 ? 'disabled' : ''}>▶</button>
+        <button class="pagination-btn nav-btn ${currentPage >= data.totalPages - 1 ? 'disabled' : ''}" 
+                onclick="goToPage(${data.totalPages - 1})" ${currentPage >= data.totalPages - 1 ? 'disabled' : ''}>⏭</button>
+    `;
+}
+
+function goToPage(page) {
+    if (page < 0 || page >= totalPages) return;
+    currentPage = page;
+    loadStudentsWithPagination();
+}
+
+function changePageSize(size) {
+    currentPageSize = parseInt(size);
+    currentPage = 0;
+    loadStudentsWithPagination();
+}
+
+function hidePagination() {
+    const container = document.getElementById('paginationContainer');
+    if (container) {
+        container.style.display = 'none';
+    }
+}
+
+// Override original loadStudents function
+function loadStudents() {
+    const subjectId = document.getElementById('subjectSelect').value;
+
+    // Show/hide search section
+    const searchSection = document.getElementById('studentSearchSection');
+    if (searchSection) {
+        searchSection.style.display = subjectId ? 'block' : 'none';
+    }
+
+    // Reset search params when changing subject
+    currentSearchParams = { citizenId: '', fullName: '', phone: '' };
+    currentPage = 0;
+
+    loadStudentsWithPagination();
+}
+
 // ========== Add Students to Subject Functions ==========
 
 function openAddStudentPopup() {
@@ -345,6 +542,7 @@ function loadAvailableStudents(searchName = '') {
                     </td>
                     <td>${student.citizenId || '-'}</td>
                     <td>${student.fullName || '-'}</td>
+                    <td>${formatDate(student.dateOfBirth) || '-'}</td>
                     <td>${student.phone || '-'}</td>
                 `;
 
@@ -364,7 +562,7 @@ function loadAvailableStudents(searchName = '') {
         })
         .catch(error => {
             console.error('Error loading available students:', error);
-            tbody.innerHTML = '<tr><td colspan="4" class="empty-row">Có lỗi xảy ra khi tải dữ liệu</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" class="empty-row">Có lỗi xảy ra khi tải dữ liệu</td></tr>';
         });
 }
 
