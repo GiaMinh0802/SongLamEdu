@@ -521,7 +521,7 @@ function loadAvailableStudents(searchName = '') {
             const students = data.content || [];
 
             if (students.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="empty-row">Không tìm thấy học sinh phù hợp</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-row">Không tìm thấy học sinh phù hợp</td></tr>';
                 return;
             }
 

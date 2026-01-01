@@ -79,6 +79,8 @@ storage/
 *.csv
 !src/main/resources/templates/*.xlsx
 !src/main/resources/templates/sample/*.xlsx
+!DB/
+!DB/*.csv
 
 ########################################
 # PDF export runtime files
