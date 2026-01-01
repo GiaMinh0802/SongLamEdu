@@ -65,7 +65,7 @@ public interface StudentRepository extends JpaRepository<Student, String> {
           AND s.citizen_id NOT IN (
               SELECT ss.student_id FROM student_subjects ss WHERE ss.subject_id = :subjectId
           )
-        ORDER BY p.full_name ASC
+        ORDER BY p.date_of_birth ASC
         """, nativeQuery = true)
     Page<Student> searchActiveStudentsNotInSubject(
             @Param("fullName") String fullName,
