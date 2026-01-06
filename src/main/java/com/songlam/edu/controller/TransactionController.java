@@ -3,7 +3,6 @@ package com.songlam.edu.controller;
 import com.songlam.edu.dto.TransactionDTO;
 import com.songlam.edu.entity.Transaction;
 import com.songlam.edu.service.TransactionService;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -31,7 +30,7 @@ public class TransactionController {
                                @RequestParam(defaultValue = "0") int page,
                                @RequestParam(defaultValue = "10") int size) {
 
-        Page<Transaction> revenues = transactionService.search(dto, page, size);
+        Page<Transaction> revenues = transactionService.searchForRevenues(dto, page, size);
 
         model.addAttribute("revenues", revenues);
         model.addAttribute("currentPage", page);
@@ -40,6 +39,22 @@ public class TransactionController {
         model.addAttribute("totalItems", revenues.getTotalElements());
         model.addAttribute("dto", dto);
         return "revenues";
+    }
+
+    @GetMapping("/expenses")
+    public String viewExpenses(@ModelAttribute TransactionDTO dto, Model model,
+                               @RequestParam(defaultValue = "0") int page,
+                               @RequestParam(defaultValue = "10") int size) {
+
+        Page<Transaction> expenses = transactionService.searchForExpenses(dto, page, size);
+
+        model.addAttribute("expenses", expenses);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("pageSize", size);
+        model.addAttribute("totalPages", expenses.getTotalPages());
+        model.addAttribute("totalItems", expenses.getTotalElements());
+        model.addAttribute("dto", dto);
+        return "expenses";
     }
 
     @PostMapping("/revenues")
@@ -56,17 +71,36 @@ public class TransactionController {
             transactionService.createRevenue(studentId.trim(), reason.trim(), amount, email, yearId, classId, subjectId);
             return "redirect:/transactions/revenues";
         } catch (IllegalArgumentException e) {
-            Page<Transaction> revenues = transactionService.search(new TransactionDTO(), null, null);
+            Page<Transaction> revenues = transactionService.searchForRevenues(new TransactionDTO(), null, null);
             model.addAttribute("revenues", revenues);
             model.addAttribute("error", e.getMessage());
             return "revenues";
         }
     }
 
+    @PostMapping("/expenses")
+    public String createExpenses(Model model, Authentication authentication,
+                                @RequestParam("receiverName") String receiverName,
+                                 @RequestParam("receiverAddress") String receiverAddress,
+                                @RequestParam("reason") String reason,
+                                @RequestParam("amount") String amountStr) {
+        try {
+            BigDecimal amount = new BigDecimal(amountStr.replaceAll("[.,]", ""));
+            String email = authentication.getName();
+            transactionService.createExpense(receiverName.trim(), receiverAddress.trim(), reason.trim(), amount, email);
+            return "redirect:/transactions/expenses";
+        } catch (IllegalArgumentException e) {
+            Page<Transaction> expenses = transactionService.searchForExpenses(new TransactionDTO(), null, null);
+            model.addAttribute("expenses", expenses);
+            model.addAttribute("error", e.getMessage());
+            return "expenses";
+        }
+    }
+
     @GetMapping("/revenues/download/{id}")
     public ResponseEntity<byte[]> downloadRevenuePdf(@PathVariable String id) throws IOException {
 
-        byte[] pdfBytes = transactionService.createPdf(id);
+        byte[] pdfBytes = transactionService.createPdf(id, true);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION,
@@ -75,14 +109,38 @@ public class TransactionController {
                 .body(pdfBytes);
     }
 
+    @GetMapping("/expenses/download/{id}")
+    public ResponseEntity<byte[]> downloadExpensePdf(@PathVariable String id) throws IOException {
+
+        byte[] pdfBytes = transactionService.createPdf(id, false);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=phieu-chi-" + id + ".pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfBytes);
+    }
+
     @GetMapping("/revenues/view/{id}")
     public ResponseEntity<byte[]> viewRevenuePdf(@PathVariable String id) throws IOException {
 
-        byte[] pdfBytes = transactionService.createPdf(id);
+        byte[] pdfBytes = transactionService.createPdf(id, true);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION,
                         "inline; filename=phieu-thu-" + id + ".pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfBytes);
+    }
+
+    @GetMapping("/expenses/view/{id}")
+    public ResponseEntity<byte[]> viewExpensePdf(@PathVariable String id) throws IOException {
+
+        byte[] pdfBytes = transactionService.createPdf(id, false);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "inline; filename=phieu-chi-" + id + ".pdf")
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(pdfBytes);
     }
@@ -95,14 +153,24 @@ public class TransactionController {
         return "revenue-detail";
     }
 
+    @GetMapping("/expenses/detail/{id}")
+    public String viewExpenseDetail(@PathVariable String id, Model model) {
+        Transaction transaction = transactionService.findById(id).orElse(null);
+        TransactionDTO dto = transactionService.toDTO(transaction);
+        model.addAttribute("transaction", dto);
+        return "expense-detail";
+    }
+
     @PostMapping("/revenues/detail")
     public String updateRevenue(@ModelAttribute TransactionDTO dto) {
-        transactionService.updateRevenue(dto);
+        transactionService.updateTransaction(dto);
         return "redirect:/transactions/revenues/detail/" + dto.getTransactionId() + "?updated=true";
     }
 
-    @GetMapping("/expenses")
-    public String viewExpenses() {
-        return "expenses";
+    @PostMapping("/expenses/detail")
+    public String updateExpenses(@ModelAttribute TransactionDTO dto) {
+        transactionService.updateTransaction(dto);
+        return "redirect:/transactions/expenses/detail/" + dto.getTransactionId() + "?updated=true";
     }
+
 }

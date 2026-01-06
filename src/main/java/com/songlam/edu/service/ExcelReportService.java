@@ -59,7 +59,6 @@ public class ExcelReportService {
         Workbook workbook = new XSSFWorkbook(templateStream);
         Sheet sheet = workbook.getSheetAt(0);
 
-        // Row 2 (index 1): Cập nhật tiêu đề thời gian
         Row row2 = sheet.getRow(1);
         if (row2 != null) {
             Cell periodCell = row2.getCell(0);
@@ -68,7 +67,6 @@ public class ExcelReportService {
             }
         }
 
-        // Lấy style mẫu từ row 7 (index 6) trước khi xóa
         Row templateRow = sheet.getRow(6);
         CellStyle templateStyleH = null;
         Font originalFont = null;
@@ -79,19 +77,17 @@ public class ExcelReportService {
             }
         }
 
-        // Xóa row 7-9 (index 6, 7, 8) hoàn toàn
         for (int i = 8; i >= 6; i--) {
             Row row = sheet.getRow(i);
             if (row != null) {
                 sheet.removeRow(row);
             }
         }
-        // Shift các row từ index 9 lên để lấp chỗ trống
+
         if (sheet.getLastRowNum() >= 9) {
             sheet.shiftRows(9, sheet.getLastRowNum(), -3);
         }
 
-        // Tạo các CellStyle
         DataFormat dataFormat = workbook.createDataFormat();
 
         CellStyle borderStyle = workbook.createCellStyle();
@@ -104,7 +100,6 @@ public class ExcelReportService {
         numberStyle.cloneStyleFrom(borderStyle);
         numberStyle.setDataFormat(dataFormat.getFormat("#,##0"));
 
-        // Font đen (giữ từ template)
         Font blackFont = workbook.createFont();
         if (originalFont != null) {
             blackFont.setFontName(originalFont.getFontName());
@@ -114,7 +109,6 @@ public class ExcelReportService {
         }
         blackFont.setColor(IndexedColors.BLACK.getIndex());
 
-        // Font đỏ (giữ từ template)
         Font redFont = workbook.createFont();
         if (originalFont != null) {
             redFont.setFontName(originalFont.getFontName());
@@ -124,7 +118,6 @@ public class ExcelReportService {
         }
         redFont.setColor(IndexedColors.RED.getIndex());
 
-        // Font đen đậm (cho row Cộng phát sinh)
         Font blackBoldFont = workbook.createFont();
         if (originalFont != null) {
             blackBoldFont.setFontName(originalFont.getFontName());
@@ -134,7 +127,6 @@ public class ExcelReportService {
         blackBoldFont.setBold(true);
         blackBoldFont.setColor(IndexedColors.BLACK.getIndex());
 
-        // Font đỏ đậm (cho row Cộng phát sinh)
         Font redBoldFont = workbook.createFont();
         if (originalFont != null) {
             redBoldFont.setFontName(originalFont.getFontName());
@@ -144,12 +136,9 @@ public class ExcelReportService {
         redBoldFont.setBold(true);
         redBoldFont.setColor(IndexedColors.RED.getIndex());
 
-        // Format cho số dương: #,##0_)
         String positiveFormat = "#,##0_)";
-        // Format cho số âm: (#,##0) - hiển thị giá trị tuyệt đối trong ngoặc
         String negativeFormat = "(#,##0)";
 
-        // Style cho cột H - số dư dương (font đen)
         CellStyle positiveBalanceStyle = workbook.createCellStyle();
         if (templateStyleH != null) {
             positiveBalanceStyle.cloneStyleFrom(templateStyleH);
@@ -159,7 +148,6 @@ public class ExcelReportService {
         positiveBalanceStyle.setDataFormat(dataFormat.getFormat(positiveFormat));
         positiveBalanceStyle.setFont(blackFont);
 
-        // Style cho cột H - số dư âm (font đỏ, hiển thị trong ngoặc)
         CellStyle negativeBalanceStyle = workbook.createCellStyle();
         if (templateStyleH != null) {
             negativeBalanceStyle.cloneStyleFrom(templateStyleH);
@@ -169,7 +157,6 @@ public class ExcelReportService {
         negativeBalanceStyle.setDataFormat(dataFormat.getFormat(negativeFormat));
         negativeBalanceStyle.setFont(redFont);
 
-        // Style cho cột H row Cộng phát sinh - dương (font đen đậm)
         CellStyle positiveBoldBalanceStyle = workbook.createCellStyle();
         if (templateStyleH != null) {
             positiveBoldBalanceStyle.cloneStyleFrom(templateStyleH);
@@ -179,7 +166,6 @@ public class ExcelReportService {
         positiveBoldBalanceStyle.setDataFormat(dataFormat.getFormat(positiveFormat));
         positiveBoldBalanceStyle.setFont(blackBoldFont);
 
-        // Style cho cột H row Cộng phát sinh - âm (font đỏ đậm, hiển thị trong ngoặc)
         CellStyle negativeBoldBalanceStyle = workbook.createCellStyle();
         if (templateStyleH != null) {
             negativeBoldBalanceStyle.cloneStyleFrom(templateStyleH);
@@ -189,22 +175,18 @@ public class ExcelReportService {
         negativeBoldBalanceStyle.setDataFormat(dataFormat.getFormat(negativeFormat));
         negativeBoldBalanceStyle.setFont(redBoldFont);
 
-        // Tính toán
         BigDecimal runningBalance = BigDecimal.ZERO;
         BigDecimal totalThu = BigDecimal.ZERO;
         BigDecimal totalChi = BigDecimal.ZERO;
 
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-        // Dữ liệu bắt đầu từ row 7 (index 6) sau khi xóa
         int dataStartRow = 6;
 
-        // Shift các row xuống để chèn dữ liệu
         if (transactions.size() > 0 && sheet.getLastRowNum() >= dataStartRow) {
             sheet.shiftRows(dataStartRow, sheet.getLastRowNum(), transactions.size());
         }
 
-        // Điền dữ liệu vào các row mới
         for (int i = 0; i < transactions.size(); i++) {
             Transaction t = transactions.get(i);
             int rowIndex = dataStartRow + i;
@@ -224,14 +206,14 @@ public class ExcelReportService {
             cellB.setCellValue(t.getDateOfDocument().format(dateFormatter));
             cellB.setCellStyle(borderStyle);
 
-            // Column C (2): transactionNumber nếu PT
+            // Column C (2): transactionNumber
             Cell cellC = getOrCreateCell(row, 2);
             if (isThu) {
                 cellC.setCellValue(transactionNumber);
             }
             cellC.setCellStyle(borderStyle);
 
-            // Column D (3): transactionNumber nếu PC
+            // Column D (3): transactionNumber
             Cell cellD = getOrCreateCell(row, 3);
             if (isChi) {
                 cellD.setCellValue(transactionNumber);
@@ -243,7 +225,7 @@ public class ExcelReportService {
             cellE.setCellValue(t.getReason());
             cellE.setCellStyle(borderStyle);
 
-            // Column F (5): amount nếu PT (Thu)
+            // Column F (5): amount
             Cell cellF = getOrCreateCell(row, 5);
             if (isThu && t.getAmount() != null) {
                 cellF.setCellValue(t.getAmount().doubleValue());
@@ -252,7 +234,7 @@ public class ExcelReportService {
             }
             cellF.setCellStyle(numberStyle);
 
-            // Column G (6): amount nếu PC (Chi)
+            // Column G (6): amount
             Cell cellG = getOrCreateCell(row, 6);
             if (isChi && t.getAmount() != null) {
                 cellG.setCellValue(t.getAmount().doubleValue());
@@ -261,13 +243,12 @@ public class ExcelReportService {
             }
             cellG.setCellStyle(numberStyle);
 
-            // Column H (7): Số dư lũy kế - kiểm tra âm/dương để chọn style
+            // Column H (7):
             Cell cellH = getOrCreateCell(row, 7);
             if (runningBalance.compareTo(BigDecimal.ZERO) >= 0) {
                 cellH.setCellValue(runningBalance.doubleValue());
                 cellH.setCellStyle(positiveBalanceStyle);
             } else {
-                // Đặt giá trị tuyệt đối, format sẽ thêm ngoặc
                 cellH.setCellValue(runningBalance.abs().doubleValue());
                 cellH.setCellStyle(negativeBalanceStyle);
             }
@@ -279,7 +260,7 @@ public class ExcelReportService {
             }
             cellI.setCellStyle(borderStyle);
 
-            // Column J (9): student.person.fullName
+            // Column J (9):
             Cell cellJ = getOrCreateCell(row, 9);
             if (isThu) {
                 if (t.getStudent() != null && t.getStudent().getPerson() != null) {
@@ -295,7 +276,6 @@ public class ExcelReportService {
             cellJ.setCellStyle(borderStyle);
         }
 
-        // Row tổng cộng phát sinh
         int totalRowIndex = dataStartRow + transactions.size();
         Row rowTotal = sheet.getRow(totalRowIndex);
         if (rowTotal != null) {
@@ -305,7 +285,6 @@ public class ExcelReportService {
             Cell cellG = getOrCreateCell(rowTotal, 6);
             cellG.setCellValue(totalChi.doubleValue());
 
-            // Column H: Số dư - kiểm tra âm/dương để chọn style đậm
             Cell cellH = getOrCreateCell(rowTotal, 7);
             if (runningBalance.compareTo(BigDecimal.ZERO) >= 0) {
                 cellH.setCellValue(runningBalance.doubleValue());
@@ -316,7 +295,6 @@ public class ExcelReportService {
             }
         }
 
-        // Row tổng thu - chi
         int summaryRowIndex = dataStartRow + transactions.size() + 1;
         Row rowSummary = sheet.getRow(summaryRowIndex);
         if (rowSummary != null) {

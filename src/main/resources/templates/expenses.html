@@ -1,10 +1,13 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý chi - Song Lâm Edu</title>
     <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/datepicker.css}">
+    <link rel="stylesheet" th:href="@{/css/expenses.css}">
 </head>
 <body>
 <div th:replace="~{fragments/header}"></div>
@@ -13,13 +16,175 @@
     <main class="app-content">
         <h1 class="page-title-box">💸 Quản lý chi</h1>
 
-        <div id="info-container" class="info-wrap">
+        <div id="info-container" class="info-wrap editing">
 
+            <div class="info-section">
+                <h2 class="info-section-title">Tìm kiếm</h2>
+
+                <form id="searchForm" th:action="@{/transactions/expenses}" th:object="${dto}" method="get" class="search-form-grid">
+                    <div class="search-row">
+                        <div class="search-field">
+                            <label class="search-label">Mã phiếu</label>
+                            <input class="search-input" type="text" id="codeInput" name="transactionId" th:field="*{transactionId}">
+                        </div>
+                        <div class="search-field">
+                            <label class="search-label">Tên người nhận</label>
+                            <input class="search-input" type="text" id="receiverInput" name="receiverName" th:field="*{receiverName}">
+                        </div>
+                        <div class="search-field">
+                            <label class="search-label">Tên thủ quỹ</label>
+                            <input class="search-input" type="text" id="cashierInput" name="cashierName" th:field="*{cashierName}">
+                        </div>
+                    </div>
+
+                    <div class="search-row search-row-2">
+                        <div class="search-field">
+                            <label class="search-label">Từ ngày</label>
+                            <input class="search-input datepicker datepicker-input" type="text" id="fromInput" name="dateFrom" th:field="*{dateFrom}" placeholder="dd/MM/yyyy">
+                        </div>
+                        <div class="search-field">
+                            <label class="search-label">Đến ngày</label>
+                            <input class="search-input datepicker datepicker-input" type="text" id="toInput" name="dateTo" th:field="*{dateTo}" placeholder="dd/MM/yyyy">
+                        </div>
+                    </div>
+
+                    <div class="search-actions-row">
+                        <div class="search-actions-left">
+                            <button type="button" class="btn primary" onclick="openCreateExpensePopup()">➕ Tạo phiếu chi</button>
+                        </div>
+                        <div class="search-actions-right">
+                            <button type="submit" class="btn primary">🔎 Tìm kiếm</button>
+                            <button type="button" class="btn" onclick="clearSearchFilters()">❌ Xóa lọc</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="info-section">
+                <h2 class="info-section-title">Danh sách phiếu chi</h2>
+                <div style="overflow:auto;">
+                    <table class="expense-table">
+                        <thead>
+                        <tr>
+                            <th>Mã phiếu</th>
+                            <th>Ngày chi</th>
+                            <th>Họ tên</th>
+                            <th>Số tiền</th>
+                            <th>Người tạo</th>
+                            <th>Thao tác</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="t : ${expenses}" style="cursor: pointer;"
+                            th:onclick="|window.open('@{/transactions/expenses/view/{id}(id=${t.transactionNumber})}', '_blank')|">
+                            <td th:text="${t.transactionNumber}"></td>
+                            <td th:text="${t.dateOfRecorded != null ? #temporals.format(t.dateOfRecorded, 'dd/MM/yyyy') : ''}"></td>
+                            <td th:text="${t.receiverName}"></td>
+                            <td class="text-money" th:text="${#numbers.formatDecimal(t.amount, 0, 'COMMA', 0, 'POINT')}"></td>
+                            <td th:text="${t.cashier != null ? t.cashier.person.fullName : ''}"></td>
+                            <td class="action">
+                                <button type="button" class="btn btn-sm primary" th:onclick="|window.location.href='@{/transactions/expenses/detail/{id}(id=${t.transactionNumber})}'|">Chi tiết</button>
+                                <button type="button" class="btn btn-sm primary" th:onclick="|window.location.href='@{/transactions/expenses/download/{id}(id=${t.transactionNumber})}'|">Xuất phiếu</button>
+                            </td>
+                        </tr>
+                        <tr th:if="${totalPages == 0}">
+                            <td colspan="6" class="empty-row">Không có dữ liệu</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination-container" th:if="${expenses != null && expenses.totalPages > 0}">
+                    <div class="pagination-info">
+                        Hiển thị <span th:text="${expenses.numberOfElements}">0</span> / <span th:text="${expenses.totalElements}">0</span> phiếu chi
+                    </div>
+                    <div class="pagination">
+                        <a th:href="@{/transactions/expenses(page=0, size=${pageSize}, transactionId=${dto.transactionId}, receiverName=${dto.receiverName}, cashierName=${dto.cashierName}, dateFrom=${dto.dateFrom}, dateTo=${dto.dateTo})}"
+                           th:classappend="${currentPage == 0} ? 'disabled'" class="pagination-btn">
+                            ⏮
+                        </a>
+                        <a th:href="@{/transactions/expenses(page=${currentPage - 1}, size=${pageSize}, transactionId=${dto.transactionId}, receiverName=${dto.receiverName}, cashierName=${dto.cashierName}, dateFrom=${dto.dateFrom}, dateTo=${dto.dateTo})}"
+                           th:classappend="${currentPage == 0} ? 'disabled'" class="pagination-btn">
+                            ◀
+                        </a>
+
+                        <th:block th:each="i : ${#numbers.sequence(0, expenses.totalPages - 1)}">
+                            <a th:if="${i >= currentPage - 2 and i <= currentPage + 2}"
+                               th:href="@{/transactions/expenses(page=${i}, size=${pageSize}, transactionId=${dto.transactionId}, receiverName=${dto.receiverName}, cashierName=${dto.cashierName}, dateFrom=${dto.dateFrom}, dateTo=${dto.dateTo})}"
+                               th:text="${i + 1}"
+                               th:classappend="${i == currentPage} ? 'active'"
+                               class="pagination-btn"></a>
+                        </th:block>
+
+                        <a th:href="@{/transactions/expenses(page=${currentPage + 1}, size=${pageSize}, transactionId=${dto.transactionId}, receiverName=${dto.receiverName}, cashierName=${dto.cashierName}, dateFrom=${dto.dateFrom}, dateTo=${dto.dateTo})}"
+                           th:classappend="${currentPage >= expenses.totalPages - 1} ? 'disabled'" class="pagination-btn">
+                            ▶
+                        </a>
+                        <a th:href="@{/transactions/expenses(page=${expenses.totalPages - 1}, size=${pageSize}, transactionId=${dto.transactionId}, receiverName=${dto.receiverName}, cashierName=${dto.cashierName}, dateFrom=${dto.dateFrom}, dateTo=${dto.dateTo})}"
+                           th:classappend="${currentPage >= expenses.totalPages - 1} ? 'disabled'" class="pagination-btn">
+                            ⏭
+                        </a>
+                    </div>
+                    <div class="pagination-size">
+                        <label>Hiển thị:</label>
+                        <select onchange="changePageSize(this.value)">
+                            <option value="10" th:selected="${pageSize == 10}">10</option>
+                            <option value="20" th:selected="${pageSize == 20}">20</option>
+                            <option value="50" th:selected="${pageSize == 50}">50</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 </div>
 
+<div id="createExpensePopup" class="popup-overlay" onclick="closePopupOnOverlay(event, 'createExpensePopup')">
+    <div class="popup-content">
+        <div class="popup-header">
+            <h3 class="popup-title">➕ Tạo phiếu chi</h3>
+            <button class="popup-close" onclick="closeCreateExpensePopup()">&times;</button>
+        </div>
+
+        <form th:action="@{/transactions/expenses}" method="post" id="createExpenseForm">
+            <div class="info-grid">
+                <div class="info-label required">Họ tên người nhận</div>
+                <div>
+                    <input class="info-value" type="text" id="receiverNameInput" name="receiverName" required>
+                </div>
+
+                <div class="info-label">Địa chỉ người nhận</div>
+                <div>
+                    <input class="info-value" type="text" id="receiverAddressInput" name="receiverAddress">
+                </div>
+
+                <div class="info-label required">Số tiền</div>
+                <div>
+                    <input class="info-value" type="text" id="amountInput" name="amountDisplay" placeholder="VD: 1.000.000" required oninput="formatAmountInput(this)">
+                    <input type="hidden" name="amount" id="amountHidden">
+                    <small class="note">Nhập số tiền bằng VNĐ</small>
+                </div>
+
+                <div class="info-label required">Lý do chi</div>
+                <div>
+                    <input class="info-value" type="text" id="reasonInput" name="reason" placeholder="VD: Trả lương nhân viên" required>
+                </div>
+            </div>
+
+            <div id="createExpenseError" class="alert alert-error" style="display: none; margin-top: 16px;"></div>
+
+            <div style="margin-top: 20px; display: flex; gap: 8px; justify-content: flex-end;">
+                <button type="button" class="btn" onclick="closeCreateExpensePopup()">Hủy</button>
+                <button type="submit" class="btn primary">💰 Tạo phiếu chi</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script th:src="@{/js/datepicker.js}"></script>
 <script defer th:src="@{/js/app.js}"></script>
+<script th:src="@{/js/expenses.js}"></script>
 
 </body>
 </html>

@@ -86,7 +86,6 @@ public class PasswordResetService {
             throw new IllegalArgumentException("Token đã được sử dụng");
         }
 
-        // Update password
         User user = resetToken.getUser();
         user.setPasswordHash(passwordEncoder.encode(dto.getNewPassword()));
         userRepository.save(user);

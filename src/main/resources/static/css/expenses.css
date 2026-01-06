@@ -1,0 +1,255 @@
+/* Search Form Grid */
+.search-form-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.search-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    align-items: end;
+}
+
+.search-row-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.search-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.search-label {
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.search-input {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    font-size: 14px;
+    transition: all 0.3s;
+    background: white;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary-start);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.search-input:hover {
+    border-color: var(--hover-border);
+}
+
+/* Row 3: Actions */
+.search-actions-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding-top: 8px;
+}
+
+.search-actions-left {
+    display: flex;
+    gap: 8px;
+}
+
+.search-actions-right {
+    display: flex;
+    gap: 8px;
+}
+
+.search-actions-row .btn {
+    white-space: nowrap;
+}
+
+/* Table Styles */
+.expense-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.expense-table thead {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+}
+
+.expense-table th {
+    text-align: left;
+    padding: 14px 16px;
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.expense-table th.text-right {
+    text-align: center;
+}
+
+.expense-table tbody tr {
+    border-bottom: 1px solid #f0f0f0;
+    transition: all 0.2s ease;
+}
+
+.expense-table tbody tr:hover {
+    background: #f0fff4;
+    transform: scale(1.01);
+    box-shadow: 0 2px 8px rgba(17, 153, 142, 0.1);
+}
+
+.expense-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.expense-table td {
+    padding: 14px 16px;
+    font-size: 14px;
+    color: #333;
+}
+
+.expense-table td.text-money {
+    font-weight: 600;
+    color: #11998e;
+}
+
+.expense-table .empty-row {
+    text-align: center;
+    padding: 32px;
+    color: #999;
+    font-style: italic;
+}
+
+/* Cancel form inline */
+.cancel-form {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.cancel-form input {
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    min-width: 150px;
+}
+
+.popup-content .info-value {
+    background: white;
+    border-color: var(--border);
+}
+
+/* Autocomplete Styles */
+.autocomplete-container {
+    position: relative;
+}
+
+.suggestions-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.suggestions-dropdown.active {
+    display: block;
+}
+
+.suggestion-item {
+    padding: 10px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover {
+    background-color: #f5f5f5;
+}
+
+.suggestion-item.selected {
+    background-color: #e3f2fd;
+}
+
+.suggestion-cccd {
+    font-weight: 600;
+    color: #333;
+}
+
+.suggestion-name {
+    color: #666;
+    margin-left: 8px;
+}
+
+.suggestion-empty {
+    padding: 10px 12px;
+    color: #999;
+    text-align: center;
+    font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .search-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .search-row-2 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .search-actions-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-actions-left,
+    .search-actions-right {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 576px) {
+    .search-row {
+        grid-template-columns: 1fr;
+    }
+
+    .search-row-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .search-actions-row {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .search-actions-left,
+    .search-actions-right {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}

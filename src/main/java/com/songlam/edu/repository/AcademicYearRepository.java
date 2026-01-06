@@ -16,4 +16,5 @@ public interface AcademicYearRepository extends JpaRepository<AcademicYear, Long
     List<AcademicYear> findByStartYearGreaterThanEqual(Integer startYear);
 
     List<AcademicYear> findAllByOrderByStartYearAsc();
+
 }

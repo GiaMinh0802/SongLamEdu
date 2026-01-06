@@ -37,8 +37,7 @@ public interface StudentRepository extends JpaRepository<Student, String> {
           AND (:fullName IS NULL OR LOWER(p.full_name) LIKE LOWER(CONCAT('%', :fullName, '%')))
           AND (:phone IS NULL OR p.phone LIKE CONCAT('%', :phone, '%'))
         ORDER BY p.updated_at DESC
-        """,
-                countQuery = """
+        """, countQuery = """
         SELECT COUNT(s.citizen_id)
         FROM students s
         JOIN person p ON s.citizen_id = p.citizen_id
@@ -85,8 +84,7 @@ public interface StudentRepository extends JpaRepository<Student, String> {
       AND (:classId IS NULL OR c.id = :classId)
       AND (:subjectId IS NULL OR sub.id = :subjectId)
     ORDER BY s.citizen_id ASC
-    """,
-            countQuery = """
+    """, countQuery = """
     SELECT COUNT(DISTINCT s.citizen_id)
     FROM students s
     JOIN person p ON s.citizen_id = p.citizen_id
@@ -97,12 +95,12 @@ public interface StudentRepository extends JpaRepository<Student, String> {
       AND (:yearId IS NULL OR c.academic_year_id = :yearId)
       AND (:classId IS NULL OR c.id = :classId)
       AND (:subjectId IS NULL OR sub.id = :subjectId)
-    """,
-            nativeQuery = true)
+    """, nativeQuery = true)
     Page<Student> searchByKeywordAndFilters(
             @Param("keyword") String keyword,
             @Param("yearId") Long yearId,
             @Param("classId") Long classId,
             @Param("subjectId") Long subjectId,
             Pageable pageable);
+
 }

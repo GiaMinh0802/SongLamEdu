@@ -21,8 +21,6 @@ import java.util.stream.Collectors;
 @Service
 public class ClassService {
 
-    private static final int DEFAULT_PAGE_SIZE = 20;
-
     private final AcademicYearRepository academicYearRepository;
     private final SchoolClassRepository schoolClassRepository;
     private final SubjectRepository subjectRepository;
@@ -109,7 +107,7 @@ public class ClassService {
     public Page<Student> searchStudentsForSubject(String fullName, Long subjectId, Integer page, Integer size) {
         Pageable pageable = PageRequest.of(
                 page == null || page < 0 ? 0 : page,
-                size == null || size <= 0 ? DEFAULT_PAGE_SIZE : size
+                size == null || size <= 0 ? 10 : size
         );
 
         String searchName = (fullName != null && !fullName.trim().isEmpty()) ? fullName.trim() : null;
@@ -152,7 +150,6 @@ public class ClassService {
 
         int addedCount = 0;
         for (String citizenId : studentIds) {
-            // Kiểm tra xem học sinh đã có trong môn học chưa
             if (!studentSubjectRepository.existsByStudentCitizenIdAndSubjectId(citizenId, subjectId)) {
                 Student student = studentRepository.findById(citizenId).orElse(null);
                 if (student != null && student.getStatus() == 1) { // Chỉ thêm học sinh đang học
@@ -169,14 +166,12 @@ public class ClassService {
 
     @Transactional
     public int removeStudentsFromSubject(Long subjectId, List<String> studentIds) {
-        // Kiểm tra môn học tồn tại
         if (!subjectRepository.existsById(subjectId)) {
             throw new IllegalArgumentException("Không tìm thấy môn học!");
         }
 
         int removedCount = 0;
         for (String citizenId : studentIds) {
-            // Tìm và xóa bản ghi StudentSubject
             StudentSubject studentSubject = studentSubjectRepository
                     .findByStudentCitizenIdAndSubjectId(citizenId, subjectId)
                     .orElse(null);
@@ -193,9 +188,6 @@ public class ClassService {
         LocalDate today = LocalDate.now();
         int currentYear = today.getYear();
 
-        // Năm học bắt đầu từ 1/9 hằng năm
-        // Nếu hiện tại >= 1/9 thì năm học là currentYear - (currentYear+1)
-        // Nếu hiện tại < 1/9 thì năm học là (currentYear-1) - currentYear
         int startYear;
         if (today.getMonth().getValue() >= Month.SEPTEMBER.getValue()) {
             startYear = currentYear;
@@ -210,7 +202,6 @@ public class ClassService {
         LocalDate today = LocalDate.now();
         int currentYear = today.getYear();
 
-        // Tính năm bắt đầu của năm học hiện tại
         int startYear;
         if (today.getMonth().getValue() >= Month.SEPTEMBER.getValue()) {
             startYear = currentYear;

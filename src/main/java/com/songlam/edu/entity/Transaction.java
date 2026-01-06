@@ -53,6 +53,9 @@ public class Transaction {
     @Column(name = "receiver_name")
     private String receiverName;
 
+    @Column(name = "receiver_adress")
+    private String receiverAdress;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "academic_year_id")
     private AcademicYear academicYear;

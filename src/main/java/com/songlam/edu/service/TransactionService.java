@@ -52,11 +52,22 @@ public class TransactionService {
         this.subjectRepository = subjectRepository;
     }
 
-    public Page<Transaction> search(TransactionDTO dto, Integer page, Integer size) {
+    public Page<Transaction> searchForRevenues(TransactionDTO dto, Integer page, Integer size) {
         Pageable pageable = PageRequest.of(page == null || page < 0 ? 0 : page, size == null || size <= 0 ? 10 : size);
-        return transactionRepository.search(
+        return transactionRepository.searchForRevenues(
                 emptyToNull(dto.getTransactionId()),
                 emptyToNull(dto.getStudentName()),
+                emptyToNull(dto.getCashierName()),
+                dto.getDateFrom(),
+                dto.getDateTo(),
+                pageable);
+    }
+
+    public Page<Transaction> searchForExpenses(TransactionDTO dto, Integer page, Integer size) {
+        Pageable pageable = PageRequest.of(page == null || page < 0 ? 0 : page, size == null || size <= 0 ? 10 : size);
+        return transactionRepository.searchForExpenses(
+                emptyToNull(dto.getTransactionId()),
+                emptyToNull(dto.getReceiverName()),
                 emptyToNull(dto.getCashierName()),
                 dto.getDateFrom(),
                 dto.getDateTo(),
@@ -86,7 +97,7 @@ public class TransactionService {
         Subject subject = subjectRepository.findById(subjectId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy môn học"));
 
-        String code = generateNextCode();
+        String code = generateNextCodeForRevenues();
         Transaction tx = new Transaction();
         tx.setTransactionNumber(code);
         tx.setDateOfRecorded(LocalDate.now());
@@ -102,20 +113,53 @@ public class TransactionService {
         transactionRepository.save(tx);
     }
 
-    public void updateRevenue(TransactionDTO dto) {
-        Transaction tx = transactionRepository.findById(dto.getTransactionId()).orElseGet(Transaction::new);
-        tx.setReason(dto.getReason());
-        tx.setAmount(new BigDecimal(dto.getAmountHidden()));
-        tx.setAttachments(dto.getAttachments());
-        tx.setSourceDocuments(dto.getSourceDocuments());
-        tx.setNote(dto.getNote());
+    @Transactional
+    public void createExpense(String receiverName, String receiverAddress, String reason, BigDecimal amount, String cashierEmail) {
+
+        User cashier = userRepository.findByPersonEmail(cashierEmail)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thủ quỹ"));
+
+        String code = generateNextCodeForExpenses();
+        Transaction tx = new Transaction();
+        tx.setTransactionNumber(code);
+        tx.setDateOfRecorded(LocalDate.now());
+        tx.setDateOfDocument(LocalDate.now());
+        tx.setReason(reason);
+        tx.setAmount(amount);
+        tx.setReceiverName(receiverName);
+        tx.setReceiverAdress(receiverAddress);
+        tx.setCashier(cashier);
+        tx.setType("PC");
         transactionRepository.save(tx);
     }
 
-    public byte[] createPdf(String transactionNumber) throws IOException {
+    public void updateTransaction(TransactionDTO dto) {
+        Transaction tx = transactionRepository.findById(dto.getTransactionId()).orElseGet(Transaction::new);
+        if (!dto.getReceiverAddress().isBlank()) {
+            tx.setReceiverAdress(dto.getReceiverAddress());
+        }
+        if (!dto.getReason().isBlank()) {
+            tx.setReason(dto.getReason());
+        }
+        if (!dto.getAmountHidden().isBlank()) {
+            tx.setAmount(new BigDecimal(dto.getAmountHidden()));
+        }
+        if (!dto.getAttachments().isBlank()) {
+            tx.setAttachments(dto.getAttachments());
+        }
+        if (!dto.getSourceDocuments().isBlank()) {
+            tx.setSourceDocuments(dto.getSourceDocuments());
+        }
+        if (!dto.getNote().isBlank()) {
+            tx.setNote(dto.getNote());
+        }
+        transactionRepository.save(tx);
+    }
+
+    public byte[] createPdf(String transactionNumber, boolean isRevenue) throws IOException {
 
         Transaction transaction = findById(transactionNumber)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phiếu thu " + transactionNumber));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy hóa đơn" + transactionNumber));
         BusinessInfo businessInfo = companyInfoService.getBusinessInfo().orElseThrow();
 
         Context context = new Context();
@@ -125,8 +169,15 @@ public class TransactionService {
         context.setVariable("receiptMonth", transaction.getDateOfRecorded().getMonthValue());
         context.setVariable("receiptYear", transaction.getDateOfRecorded().getYear());
         context.setVariable("transactionNumber", transactionNumber);
-        context.setVariable("payerName", transaction.getStudent().getPerson().getFullName());
-        context.setVariable("payerAddress", transaction.getStudent().getPerson().getAddress());
+
+        if (isRevenue) {
+            context.setVariable("payerName", transaction.getStudent().getPerson().getFullName());
+            context.setVariable("payerAddress", transaction.getStudent().getPerson().getAddress());
+        } else {
+            context.setVariable("receiverName", transaction.getReceiverName());
+            context.setVariable("receiverAddress", transaction.getReceiverAdress());
+        }
+
         context.setVariable("reason", transaction.getReason());
         context.setVariable("amount", CurrencyUtil.formatBigDecimal(transaction.getAmount()));
         context.setVariable("amountInWords", CurrencyUtil.convertText(transaction.getAmount()));
@@ -136,7 +187,13 @@ public class TransactionService {
         context.setVariable("representativeName", businessInfo.getPerson().getFullName());
         context.setVariable("cashierName", transaction.getCashier().getPerson().getFullName());
 
-        String html = templateEngine.process("sample/receipt_template", context);
+        String html;
+        if (isRevenue) {
+            html = templateEngine.process("sample/receipt_template_revenue", context);
+        } else {
+            html = templateEngine.process("sample/receipt_template_expense", context);
+        }
+
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         PdfRendererBuilder builder = new PdfRendererBuilder();
         builder.useFont(
@@ -296,7 +353,7 @@ public class TransactionService {
         return result;
     }
 
-    private String generateNextCode() {
+    private String generateNextCodeForRevenues() {
         // Use DB sequence revenues_id_seq to get next number
         Object val = entityManager.createNativeQuery("SELECT nextval('revenues_id_seq')")
                 .getSingleResult();
@@ -306,11 +363,25 @@ public class TransactionService {
         return "PT" + String.format("%06d", seq);
     }
 
+    private String generateNextCodeForExpenses() {
+        // Use DB sequence expenses_id_seq to get next number
+        Object val = entityManager.createNativeQuery("SELECT nextval('expenses_id_seq')")
+                .getSingleResult();
+        long seq;
+        if (val instanceof Number n) seq = n.longValue();
+        else seq = Long.parseLong(val.toString());
+        return "PC" + String.format("%06d", seq);
+    }
+
     public TransactionDTO toDTO(Transaction tx) {
         TransactionDTO dto = new TransactionDTO();
         dto.setTransactionId(tx.getTransactionNumber());
         dto.setType(tx.getType());
-        dto.setStudentName(tx.getStudent().getPerson().getFullName());
+        if (tx.getStudent() != null) {
+            dto.setStudentName(tx.getStudent().getPerson().getFullName());
+        }
+        dto.setReceiverName(tx.getReceiverName());
+        dto.setReceiverAddress(tx.getReceiverAdress());
         dto.setCashierName(tx.getCashier().getPerson().getFullName());
         dto.setDateOfRecorded(tx.getDateOfRecorded());
         dto.setDateOfDocument(tx.getDateOfDocument());

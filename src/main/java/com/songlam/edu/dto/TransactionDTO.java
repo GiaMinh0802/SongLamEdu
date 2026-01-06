@@ -10,6 +10,8 @@ public class TransactionDTO {
     private String transactionId;
     private String type;
     private String studentName;
+    private String receiverName;
+    private String receiverAddress;
     private String cashierName;
     @DateTimeFormat(pattern = "dd/MM/yyyy")
     private LocalDate dateFrom;
