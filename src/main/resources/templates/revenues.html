@@ -84,8 +84,8 @@
                             <td class="text-money" th:text="${#numbers.formatDecimal(t.amount, 0, 'COMMA', 0, 'POINT')}"></td>
                             <td th:text="${t.cashier != null ? t.cashier.person.fullName : ''}"></td>
                             <td class="action">
-                                <button type="button" class="btn btn-sm primary" th:onclick="|window.location.href='@{/transactions/revenues/detail/{id}(id=${t.transactionNumber})}'|">Chi tiết</button>
-                                <button type="button" class="btn btn-sm primary" th:onclick="|window.location.href='@{/transactions/revenues/download/{id}(id=${t.transactionNumber})}'|">Xuất phiếu</button>
+                                <button type="button" class="btn btn-sm primary" th:onclick="|event.stopPropagation(); window.location.href='@{/transactions/revenues/detail/{id}(id=${t.transactionNumber})}'|">Chi tiết</button>
+                                <button type="button" class="btn btn-sm primary" th:onclick="|event.stopPropagation(); window.location.href='@{/transactions/revenues/download/{id}(id=${t.transactionNumber})}'|">Xuất phiếu</button>
                             </td>
                         </tr>
                         <tr th:if="${totalPages == 0}">
