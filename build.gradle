@@ -41,7 +41,8 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
 
     // Apache POI for Excel
-    implementation 'org.apache.poi:poi:5.2.5'
+    implementation 'org.apache.poi:poi:5.2.3'
+    implementation 'org.apache.poi:poi-ooxml:5.2.3'
     implementation 'org.apache.poi:poi-ooxml:5.2.5'
     implementation 'org.apache.commons:commons-collections4:4.4'
 
