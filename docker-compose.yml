@@ -19,6 +19,7 @@ services:
       - LOG_LEVEL_ROOT=WARN
       - LOG_LEVEL_APP=INFO
       - SPRING_PROFILES_ACTIVE=production
+      - TZ=Asia/Ho_Chi_Minh
     depends_on:
       postgres:
         condition: service_healthy
@@ -40,12 +41,13 @@ services:
 
   postgres:
     image: postgres:16-alpine
-    container_name:  songlam-postgres
+    container_name: songlam-postgres
     environment:
       - POSTGRES_DB=${DB_NAME:-songlamedu}
       - POSTGRES_USER=${DB_USERNAME:-postgres}
       - POSTGRES_PASSWORD=${DB_PASSWORD:-12345}
       - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+      - TZ=Asia/Ho_Chi_Minh
     command:
       - "postgres"
       - "-c"
@@ -84,9 +86,8 @@ services:
     networks:
       - songlam-network
     restart: unless-stopped
-    # Resource limits for PostgreSQL
     mem_reservation: 256m
-    shm_size: 128mb
+    shm_size: "128mb"
     logging:
       driver: "json-file"
       options:
