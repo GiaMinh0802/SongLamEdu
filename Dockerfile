@@ -28,7 +28,6 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=90s --retries=3 \
 
 EXPOSE ${PORT:-8080}
 
-# Optimized JVM settings for 1GB RAM VPS
 ENTRYPOINT ["dumb-init", "--", "sh", "-c", "\
   java \
   -XX:+UseG1GC \
