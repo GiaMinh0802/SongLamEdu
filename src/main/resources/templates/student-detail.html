@@ -111,6 +111,18 @@
                 <div class="info-section">
                     <h2 class="info-section-title">Tình trạng học</h2>
                     <div class="info-grid">
+                        <div class="info-label">Trường hiện đang học:</div>
+                        <div>
+                            <div class="info-value" data-view th:text="*{studentSchool}">-</div>
+                            <input data-edit class="info-value hidden" type="text" th:field="*{studentSchool}" required/>
+                        </div>
+
+                        <div class="info-label">Lớp hiện đang học:</div>
+                        <div>
+                            <div class="info-value" data-view th:text="*{studentClass}">-</div>
+                            <input data-edit class="info-value hidden" type="text" th:field="*{studentClass}" required/>
+                        </div>
+
                         <div class="info-label">Tình trạng:</div>
                         <div>
                             <div class="info-value" data-view th:text="*{status} == 1 ? 'Đang học' : 'Thôi học'">-</div>

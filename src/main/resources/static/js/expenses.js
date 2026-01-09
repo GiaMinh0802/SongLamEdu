@@ -29,12 +29,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
+    loadBranches('branchSearchSelect');
     setupFormSubmitHandler();
 });
 
 // ========== Popup Functions ==========
 
 function openCreateExpensePopup() {
+    loadBranches('branchSelect');
     document.getElementById('createExpensePopup').classList.add('active');
 }
 
@@ -44,6 +46,7 @@ function closeCreateExpensePopup() {
 }
 
 function clearExpenseForm() {
+    document.getElementById('branchSelect').innerHTML = '<option value="">-- Chọn cơ sở --</option>';
     document.getElementById('receiverNameInput').value = '';
     document.getElementById('receiverAddressInput').value = '';
     document.getElementById('amountInput').value = '';
@@ -101,6 +104,26 @@ function changePageSize(size) {
     url.searchParams.set('size', size);
     url.searchParams.set('page', '0');
     window.location.href = url.toString();
+}
+
+function loadBranches(selectId) {
+    fetch('/transactions/api/branches')
+        .then(response => response.json())
+        .then(data => {
+            const branchSelect = document.getElementById(selectId);
+            const selectedBranchId = document.getElementById('selectedBranchId')?.value;
+
+            data.forEach(branch => {
+                const option = document.createElement('option');
+                option.value = branch.id;
+                option.textContent = branch.name;
+                if (selectId === 'branchSearchSelect' && branch.id.toString() === selectedBranchId) {
+                    option.selected = true;
+                }
+                branchSelect.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Error loading branches:', error));
 }
 
 // Escape key handler

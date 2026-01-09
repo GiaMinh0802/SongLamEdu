@@ -31,6 +31,12 @@ public class Student {
     @Column(name = "status")
     private Short status = 1; // 1: Studying, 0: Stopped
 
+    @Column(name = "studentSchool")
+    private String studentSchool;
+
+    @Column(name = "studentClass")
+    private String studentClass;
+
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId
     @JoinColumn(name = "citizen_id")

@@ -72,6 +72,10 @@ public class Transaction {
     @JoinColumn(name = "cashier_id", referencedColumnName = "citizen_id")
     private User cashier;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "branch_id")
+    private Branches branch;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 

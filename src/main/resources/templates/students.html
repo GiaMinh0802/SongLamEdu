@@ -61,8 +61,8 @@
                             <th>CCCD</th>
                             <th>Họ và tên</th>
                             <th>Ngày sinh</th>
-                            <th>Giới tính</th>
-                            <th>SĐT</th>
+                            <th style="text-align:center;">SĐT</th>
+                            <th style="text-align:center;">Trường<br/>Lớp</th>
                             <th>Tình trạng</th>
                             <th>Thao tác</th>
                         </tr>
@@ -75,10 +75,11 @@
                             <td th:text="${s.citizenId}"></td>
                             <td th:text="${s.person.fullName}"></td>
                             <td th:text="${s.person.dateOfBirth != null ? #temporals.format(s.person.dateOfBirth, 'dd/MM/yyyy') : '-'}"></td>
-                            <td>
-                                <span class="badge" th:classappend="${s.person.sex == 1 ? 'badge-pink' : 'badge-blue'}" th:text="${s.person.sex == 1 ? 'Nữ' : 'Nam'}"></span>
-                            </td>
                             <td th:text="${s.person.getPhone()}"></td>
+                            <td style="text-align:center;">
+                                <span th:text="${s.studentSchool}"></span><br/>
+                                <span th:text="${s.studentClass}"></span>
+                            </td>
                             <td>
                                 <span class="badge" th:classappend="${s.status} == 1 ? 'badge-success' : 'badge-danger'" th:text="${s.status} == 1 ? 'Đang học' : 'Thôi học'"></span>
                             </td>
@@ -204,6 +205,16 @@
                     <div class="info-label required">Số điện thoại</div>
                     <div>
                         <input class="info-value" type="text" name="phone" id="phone" maxlength="10" required>
+                    </div>
+
+                    <div class="info-label required">Trường hiện đang học</div>
+                    <div>
+                        <input class="info-value" type="text" name="studentSchool" id="studentSchool" required>
+                    </div>
+
+                    <div class="info-label required">Lớp hiện đang học</div>
+                    <div>
+                        <input class="info-value" type="text" name="studentClass" id="studentClass" required>
                     </div>
                 </div>
                 <div style="margin-top: 20px; display: flex; gap: 8px; justify-content: flex-end;">

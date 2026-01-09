@@ -272,8 +272,14 @@ public class ExcelReportService {
                     cellJ.setCellValue(t.getReceiverName());
                 }
             }
-
             cellJ.setCellStyle(borderStyle);
+
+            // Column K (10):
+            Cell cellK = getOrCreateCell(row, 10);
+            if (isChi) {
+                cellK.setCellValue(t.getBranch().getName());
+            }
+            cellK.setCellStyle(borderStyle);
         }
 
         int totalRowIndex = dataStartRow + transactions.size();

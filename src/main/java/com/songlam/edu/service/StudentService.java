@@ -71,6 +71,8 @@ public class StudentService {
         Student student = new Student();
         student.setPerson(person);
         student.setStatus((short) 1);
+        student.setStudentSchool(dto.getStudentSchool());
+        student.setStudentClass(dto.getStudentClass());
         student.setStartDate(LocalDate.now());
 
         studentRepository.save(student);
@@ -79,6 +81,8 @@ public class StudentService {
     public void updateStudent(StudentDTO dto) {
         Student student = studentRepository.findById(dto.getCitizenId()).orElseGet(Student::new);
         student.setStatus(dto.getStatus());
+        student.setStudentSchool(dto.getStudentSchool());
+        student.setStudentClass(dto.getStudentClass());
         if (dto.getStatus() == 1) {
             student.setEndDate(null);
         } else {
@@ -137,6 +141,8 @@ public class StudentService {
                 Short sex = getSex(row, 3);
                 String address = getString(row, 4);
                 String phone = getString(row, 5);
+                String studentSchool = getString(row, 6);
+                String studentClass = getString(row, 7);
 
                 int excelRowNum = i + 1;
                 List<String> rowErrors = new ArrayList<>();
@@ -148,6 +154,8 @@ public class StudentService {
                 if (sex == null) rowErrors.add("Giới tính không được để trống");
                 if (isBlank(phone)) rowErrors.add("Số điện thoại không được để trống");
                 if (!isBlank(phone) && !PHONE_PATTERN.matcher(phone).matches()) rowErrors.add("Số điện thoại phải gồm 10 chữ số");
+                if (isBlank(studentSchool)) rowErrors.add("Trường học hiện tại không được để trống");
+                if (isBlank(studentClass)) rowErrors.add("Lớp học hiện tại không được để trống");
 
                 if (!rowErrors.isEmpty()) {
                     result.addError("Dòng " + excelRowNum + ": " + String.join(", ", rowErrors));
@@ -167,6 +175,8 @@ public class StudentService {
                     dto.setSex(sex);
                     dto.setAddress(address);
                     dto.setPhone(phone);
+                    dto.setStudentSchool(studentSchool);
+                    dto.setStudentClass(studentClass);
 
                     createStudent(dto);
 
@@ -235,6 +245,8 @@ public class StudentService {
             dto.setAddress(person.getAddress());
             dto.setPhone(person.getPhone());
             dto.setEmail(person.getEmail());
+            dto.setStudentSchool(student.getStudentSchool());
+            dto.setStudentClass(student.getStudentClass());
         }
         dto.setStatus(student.getStatus());
         dto.setStartDate(student.getStartDate());

@@ -1,6 +1,7 @@
 package com.songlam.edu.controller;
 
 import com.songlam.edu.dto.TransactionDTO;
+import com.songlam.edu.entity.Branches;
 import com.songlam.edu.entity.Transaction;
 import com.songlam.edu.service.TransactionService;
 import org.springframework.data.domain.Page;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/transactions")
@@ -80,14 +83,15 @@ public class TransactionController {
 
     @PostMapping("/expenses")
     public String createExpenses(Model model, Authentication authentication,
-                                @RequestParam("receiverName") String receiverName,
+                                 @RequestParam("branchId") Long branchId,
+                                 @RequestParam("receiverName") String receiverName,
                                  @RequestParam("receiverAddress") String receiverAddress,
-                                @RequestParam("reason") String reason,
-                                @RequestParam("amount") String amountStr) {
+                                 @RequestParam("reason") String reason,
+                                 @RequestParam("amount") String amountStr) {
         try {
             BigDecimal amount = new BigDecimal(amountStr.replaceAll("[.,]", ""));
             String email = authentication.getName();
-            transactionService.createExpense(receiverName.trim(), receiverAddress.trim(), reason.trim(), amount, email);
+            transactionService.createExpense(branchId, receiverName.trim(), receiverAddress.trim(), reason.trim(), amount, email);
             return "redirect:/transactions/expenses";
         } catch (IllegalArgumentException e) {
             Page<Transaction> expenses = transactionService.searchForExpenses(new TransactionDTO(), null, null);
@@ -173,4 +177,16 @@ public class TransactionController {
         return "redirect:/transactions/expenses/detail/" + dto.getTransactionId() + "?updated=true";
     }
 
+    @GetMapping("/api/branches")
+    @ResponseBody
+    public List<Map<String, Object>> getBranches() {
+        List<Branches> branches = transactionService.getAllBranches();
+        return branches.stream().map(b -> {
+            Map<String, Object> map = Map.of(
+                    "id", b.getId(),
+                    "name", b.getName()
+            );
+            return map;
+        }).toList();
+    }
 }

@@ -1,13 +1,7 @@
 package com.songlam.edu.config;
 
-import com.songlam.edu.entity.AcademicYear;
-import com.songlam.edu.entity.BusinessInfo;
-import com.songlam.edu.entity.Person;
-import com.songlam.edu.entity.User;
-import com.songlam.edu.repository.AcademicYearRepository;
-import com.songlam.edu.repository.BusinessInfoRepository;
-import com.songlam.edu.repository.PersonRepository;
-import com.songlam.edu.repository.UserRepository;
+import com.songlam.edu.entity.*;
+import com.songlam.edu.repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,7 +19,7 @@ public class DataInitializer {
                                    BusinessInfoRepository businessInfoRepository,
                                    AcademicYearRepository academicYearRepository,
                                    PasswordEncoder passwordEncoder,
-                                   JdbcTemplate jdbcTemplate) {
+                                   JdbcTemplate jdbcTemplate, BranchRepository branchRepository) {
         return args -> {
 
             jdbcTemplate.execute("CREATE SEQUENCE IF NOT EXISTS revenues_id_seq START WITH 1 INCREMENT BY 1");
@@ -91,6 +85,15 @@ public class DataInitializer {
                     year.setEndYear(toYear);
 
                     academicYearRepository.save(year);
+                }
+            }
+
+            for (int i = 1; i <= 3; i++) {
+                String branchName = "Cơ sở " + i;
+                if (!branchRepository.existsByName(branchName)) {
+                    Branches branch = new Branches();
+                    branch.setName(branchName);
+                    branchRepository.save(branch);
                 }
             }
         };

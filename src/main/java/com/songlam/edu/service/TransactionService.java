@@ -33,6 +33,7 @@ public class TransactionService {
     private final AcademicYearRepository academicYearRepository;
     private final SchoolClassRepository schoolClassRepository;
     private final SubjectRepository subjectRepository;
+    private final BranchRepository branchRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -41,7 +42,11 @@ public class TransactionService {
                               StudentRepository studentRepository,
                               UserRepository userRepository,
                               CompanyInfoService companyInfoService,
-                              TemplateEngine templateEngine, AcademicYearRepository academicYearRepository, SchoolClassRepository schoolClassRepository, SubjectRepository subjectRepository) {
+                              TemplateEngine templateEngine,
+                              AcademicYearRepository academicYearRepository,
+                              SchoolClassRepository schoolClassRepository,
+                              SubjectRepository subjectRepository,
+                              BranchRepository branchRepository) {
         this.transactionRepository = transactionRepository;
         this.studentRepository = studentRepository;
         this.userRepository = userRepository;
@@ -50,6 +55,7 @@ public class TransactionService {
         this.academicYearRepository = academicYearRepository;
         this.schoolClassRepository = schoolClassRepository;
         this.subjectRepository = subjectRepository;
+        this.branchRepository = branchRepository;
     }
 
     public Page<Transaction> searchForRevenues(TransactionDTO dto, Integer page, Integer size) {
@@ -66,6 +72,7 @@ public class TransactionService {
     public Page<Transaction> searchForExpenses(TransactionDTO dto, Integer page, Integer size) {
         Pageable pageable = PageRequest.of(page == null || page < 0 ? 0 : page, size == null || size <= 0 ? 10 : size);
         return transactionRepository.searchForExpenses(
+                dto.getBranchId(),
                 emptyToNull(dto.getTransactionId()),
                 emptyToNull(dto.getReceiverName()),
                 emptyToNull(dto.getCashierName()),
@@ -114,14 +121,18 @@ public class TransactionService {
     }
 
     @Transactional
-    public void createExpense(String receiverName, String receiverAddress, String reason, BigDecimal amount, String cashierEmail) {
+    public void createExpense(Long branchId, String receiverName, String receiverAddress, String reason, BigDecimal amount, String cashierEmail) {
 
         User cashier = userRepository.findByPersonEmail(cashierEmail)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thủ quỹ"));
 
+        Branches branch = branchRepository.findById(branchId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy cở sở"));
+
         String code = generateNextCodeForExpenses();
         Transaction tx = new Transaction();
         tx.setTransactionNumber(code);
+        tx.setBranch(branch);
         tx.setDateOfRecorded(LocalDate.now());
         tx.setDateOfDocument(LocalDate.now());
         tx.setReason(reason);
@@ -376,6 +387,7 @@ public class TransactionService {
     public TransactionDTO toDTO(Transaction tx) {
         TransactionDTO dto = new TransactionDTO();
         dto.setTransactionId(tx.getTransactionNumber());
+        dto.setBranchName(tx.getBranch().getName());
         dto.setType(tx.getType());
         if (tx.getStudent() != null) {
             dto.setStudentName(tx.getStudent().getPerson().getFullName());
@@ -404,5 +416,9 @@ public class TransactionService {
 
     private static String emptyToNull(String s) {
         return (s == null || s.trim().isEmpty()) ? null : s.trim();
+    }
+
+    public List<Branches> getAllBranches() {
+        return branchRepository.findAll();
     }
 }

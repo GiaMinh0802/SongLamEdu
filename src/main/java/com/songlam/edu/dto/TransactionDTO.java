@@ -8,6 +8,8 @@ import java.time.LocalDate;
 @Data
 public class TransactionDTO {
     private String transactionId;
+    private Long branchId;
+    private String branchName;
     private String type;
     private String studentName;
     private String receiverName;

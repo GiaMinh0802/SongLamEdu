@@ -19,6 +19,8 @@ public class StudentDTO {
     private String phone;
     private String email;
     private Short status;
+    private String studentSchool;
+    private String studentClass;
     @DateTimeFormat(pattern = "dd/MM/yyyy")
     private LocalDate startDate;
     @DateTimeFormat(pattern = "dd/MM/yyyy")
