@@ -52,7 +52,7 @@ public class DataInitializer {
                 businessInfoRepository.save(businessInfo);
             }
 
-            String adminEmail = "admin@gmail.com";
+            String adminEmail = "songlamtech.dlk@gmail.com";
             if (!userRepository.existsByPersonEmail(adminEmail)) {
                 Person adminPerson = new Person();
                 adminPerson.setCitizenId("999999999999");
