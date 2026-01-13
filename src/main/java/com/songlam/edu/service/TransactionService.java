@@ -61,6 +61,7 @@ public class TransactionService {
     public Page<Transaction> searchForRevenues(TransactionDTO dto, Integer page, Integer size) {
         Pageable pageable = PageRequest.of(page == null || page < 0 ? 0 : page, size == null || size <= 0 ? 10 : size);
         return transactionRepository.searchForRevenues(
+                dto.getBranchId(),
                 emptyToNull(dto.getTransactionId()),
                 emptyToNull(dto.getStudentName()),
                 emptyToNull(dto.getCashierName()),
@@ -72,7 +73,6 @@ public class TransactionService {
     public Page<Transaction> searchForExpenses(TransactionDTO dto, Integer page, Integer size) {
         Pageable pageable = PageRequest.of(page == null || page < 0 ? 0 : page, size == null || size <= 0 ? 10 : size);
         return transactionRepository.searchForExpenses(
-                dto.getBranchId(),
                 emptyToNull(dto.getTransactionId()),
                 emptyToNull(dto.getReceiverName()),
                 emptyToNull(dto.getCashierName()),
@@ -86,8 +86,11 @@ public class TransactionService {
     }
 
     @Transactional
-    public void createRevenue(String studentCitizenId, String reason, BigDecimal amount, String cashierEmail,
+    public void createRevenue(Long branchId, String studentCitizenId, String reason, BigDecimal amount, String cashierEmail,
                               Long yearId, Long classId, Long subjectId) {
+
+        Branches branch = branchRepository.findById(branchId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy cở sở"));
 
         Student student = studentRepository.findById(studentCitizenId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy học sinh"));
@@ -107,6 +110,7 @@ public class TransactionService {
         String code = generateNextCodeForRevenues();
         Transaction tx = new Transaction();
         tx.setTransactionNumber(code);
+        tx.setBranch(branch);
         tx.setDateOfRecorded(LocalDate.now());
         tx.setDateOfDocument(LocalDate.now());
         tx.setStudent(student);
@@ -121,18 +125,14 @@ public class TransactionService {
     }
 
     @Transactional
-    public void createExpense(Long branchId, String receiverName, String receiverAddress, String reason, BigDecimal amount, String cashierEmail) {
+    public void createExpense(String receiverName, String receiverAddress, String reason, BigDecimal amount, String cashierEmail) {
 
         User cashier = userRepository.findByPersonEmail(cashierEmail)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thủ quỹ"));
 
-        Branches branch = branchRepository.findById(branchId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy cở sở"));
-
         String code = generateNextCodeForExpenses();
         Transaction tx = new Transaction();
         tx.setTransactionNumber(code);
-        tx.setBranch(branch);
         tx.setDateOfRecorded(LocalDate.now());
         tx.setDateOfDocument(LocalDate.now());
         tx.setReason(reason);
@@ -387,7 +387,9 @@ public class TransactionService {
     public TransactionDTO toDTO(Transaction tx) {
         TransactionDTO dto = new TransactionDTO();
         dto.setTransactionId(tx.getTransactionNumber());
-        dto.setBranchName(tx.getBranch().getName());
+        if (tx.getBranch() != null) {
+            dto.setBranchName(tx.getBranch().getName());
+        }
         dto.setType(tx.getType());
         if (tx.getStudent() != null) {
             dto.setStudentName(tx.getStudent().getPerson().getFullName());

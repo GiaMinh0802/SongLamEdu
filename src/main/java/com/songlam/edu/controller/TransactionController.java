@@ -62,6 +62,7 @@ public class TransactionController {
 
     @PostMapping("/revenues")
     public String createRevenue(Model model, Authentication authentication,
+                                @RequestParam("branchId") Long branchId,
                                 @RequestParam("studentId") String studentId,
                                 @RequestParam("reason") String reason,
                                 @RequestParam("amount") String amountStr,
@@ -71,7 +72,7 @@ public class TransactionController {
         try {
             BigDecimal amount = new BigDecimal(amountStr.replaceAll("[.,]", ""));
             String email = authentication.getName();
-            transactionService.createRevenue(studentId.trim(), reason.trim(), amount, email, yearId, classId, subjectId);
+            transactionService.createRevenue(branchId, studentId.trim(), reason.trim(), amount, email, yearId, classId, subjectId);
             return "redirect:/transactions/revenues";
         } catch (IllegalArgumentException e) {
             Page<Transaction> revenues = transactionService.searchForRevenues(new TransactionDTO(), null, null);
@@ -83,7 +84,6 @@ public class TransactionController {
 
     @PostMapping("/expenses")
     public String createExpenses(Model model, Authentication authentication,
-                                 @RequestParam("branchId") Long branchId,
                                  @RequestParam("receiverName") String receiverName,
                                  @RequestParam("receiverAddress") String receiverAddress,
                                  @RequestParam("reason") String reason,
@@ -91,7 +91,7 @@ public class TransactionController {
         try {
             BigDecimal amount = new BigDecimal(amountStr.replaceAll("[.,]", ""));
             String email = authentication.getName();
-            transactionService.createExpense(branchId, receiverName.trim(), receiverAddress.trim(), reason.trim(), amount, email);
+            transactionService.createExpense(receiverName.trim(), receiverAddress.trim(), reason.trim(), amount, email);
             return "redirect:/transactions/expenses";
         } catch (IllegalArgumentException e) {
             Page<Transaction> expenses = transactionService.searchForExpenses(new TransactionDTO(), null, null);

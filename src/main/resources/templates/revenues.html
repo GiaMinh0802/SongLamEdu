@@ -23,11 +23,21 @@
 
                 <form id="searchForm" th:action="@{/transactions/revenues}" th:object="${dto}" method="get" class="search-form-grid">
 
-                    <div class="search-row">
+                    <div class="search-row search-row-2">
                         <div class="search-field">
                             <label class="search-label">Mã phiếu</label>
                             <input class="search-input" type="text" id="codeInput" name="transactionId" th:field="*{transactionId}">
                         </div>
+                        <div class="search-field">
+                            <label class="search-label">Cơ sở</label>
+                            <select class="search-input" id="branchSearchSelect" name="branchId" th:field="*{branchId}">
+                                <option value="">-- Chọn cơ sở --</option>
+                            </select>
+                            <input type="hidden" id="selectedBranchId" th:value="${dto.branchId}">
+                        </div>
+                    </div>
+
+                    <div class="search-row search-row-2">
                         <div class="search-field">
                             <label class="search-label">Tên học sinh</label>
                             <input class="search-input" type="text" id="studentInput" name="studentName" th:field="*{studentName}">
@@ -68,6 +78,7 @@
                         <thead>
                         <tr>
                             <th>Mã phiếu</th>
+                            <th>Cơ sở</th>
                             <th>Ngày thu</th>
                             <th>Họ tên</th>
                             <th>Số tiền</th>
@@ -79,6 +90,7 @@
                         <tr th:each="t : ${revenues}" style="cursor: pointer;"
                             th:onclick="|window.open('@{/transactions/revenues/view/{id}(id=${t.transactionNumber})}', '_blank')|">
                             <td th:text="${t.transactionNumber}"></td>
+                            <td th:text="${t.branch != null ? t.branch.name: ''}"></td>
                             <td th:text="${t.dateOfRecorded != null ? #temporals.format(t.dateOfRecorded, 'dd/MM/yyyy') : ''}"></td>
                             <td th:text="${t.student != null ? t.student.person.fullName : ''}"></td>
                             <td class="text-money" th:text="${#numbers.formatDecimal(t.amount, 0, 'COMMA', 0, 'POINT')}"></td>
@@ -89,7 +101,7 @@
                             </td>
                         </tr>
                         <tr th:if="${totalPages == 0}">
-                            <td colspan="6" class="empty-row">Không có dữ liệu</td>
+                            <td colspan="7" class="empty-row">Không có dữ liệu</td>
                         </tr>
                         </tbody>
                     </table>
@@ -150,6 +162,13 @@
 
         <form th:action="@{/transactions/revenues}" method="post" id="createRevenueForm">
             <div class="info-grid">
+                <div class="info-label required">Cơ sở</div>
+                <div>
+                    <select class="info-value" id="branchSelect" name="branchId" required>
+                        <option value="">-- Chọn cơ sở --</option>
+                    </select>
+                </div>
+
                 <div class="info-label required">Năm học</div>
                 <div>
                     <select class="info-value" id="revenueYearSelect" name="yearId" required onchange="loadRevenueClasses()">

@@ -276,7 +276,7 @@ public class ExcelReportService {
 
             // Column K (10):
             Cell cellK = getOrCreateCell(row, 10);
-            if (isChi) {
+            if (isThu) {
                 cellK.setCellValue(t.getBranch().getName());
             }
             cellK.setCellStyle(borderStyle);

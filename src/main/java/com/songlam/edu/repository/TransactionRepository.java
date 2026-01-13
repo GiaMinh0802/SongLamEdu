@@ -22,7 +22,8 @@ public interface TransactionRepository extends JpaRepository<Transaction, String
         LEFT JOIN person ps ON s.citizen_id = ps.citizen_id
         LEFT JOIN users u ON t.cashier_id = u.citizen_id
         LEFT JOIN person pu ON u.citizen_id = pu.citizen_id
-        WHERE (:transactionId IS NULL OR t.transaction_number LIKE CONCAT('%', :transactionId, '%'))
+        WHERE (:branchId IS NULL OR t.branch_id = :branchId)
+          AND (:transactionId IS NULL OR t.transaction_number LIKE CONCAT('%', :transactionId, '%'))
           AND (:studentName IS NULL OR LOWER(ps.full_name) LIKE LOWER(CONCAT('%', :studentName, '%')))
           AND (:cashierName IS NULL OR LOWER(pu.full_name) LIKE LOWER(CONCAT('%', :cashierName, '%')))
           AND t.date_of_recorded >= COALESCE(:fromDate, t.date_of_recorded)
@@ -31,6 +32,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, String
         ORDER BY t.date_of_recorded DESC, t.transaction_number DESC
         """, nativeQuery = true)
     Page<Transaction> searchForRevenues(
+            @Param("branchId") Long branchId,
             @Param("transactionId") String transactionId,
             @Param("studentName") String studentName,
             @Param("cashierName") String cashierName,
@@ -44,8 +46,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, String
         FROM transactions t
         LEFT JOIN users u ON t.cashier_id = u.citizen_id
         LEFT JOIN person pu ON u.citizen_id = pu.citizen_id
-        WHERE (:branchId IS NULL OR t.branch_id = :branchId)
-          AND (:transactionId IS NULL OR t.transaction_number LIKE CONCAT('%', :transactionId, '%'))
+        WHERE (:transactionId IS NULL OR t.transaction_number LIKE CONCAT('%', :transactionId, '%'))
           AND (:receiverName IS NULL OR LOWER(t.receiver_name) LIKE LOWER(CONCAT('%', :receiverName, '%')))
           AND (:cashierName IS NULL OR LOWER(pu.full_name) LIKE LOWER(CONCAT('%', :cashierName, '%')))
           AND t.date_of_recorded >= COALESCE(:fromDate, t.date_of_recorded)
@@ -54,7 +55,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, String
         ORDER BY t.date_of_recorded DESC, t.transaction_number DESC
         """, nativeQuery = true)
     Page<Transaction> searchForExpenses(
-            @Param("branchId") Long branchId,
             @Param("transactionId") String transactionId,
             @Param("receiverName") String receiverName,
             @Param("cashierName") String cashierName,

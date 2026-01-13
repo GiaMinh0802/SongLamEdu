@@ -62,6 +62,7 @@ let currentSuggestionIndex = -1;
 
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
+    loadBranches('branchSearchSelect');
     checkUrlParamsAndOpenPopup();
     setupFormSubmitHandler();
     setupKeyboardNavigation();
@@ -353,6 +354,7 @@ function updateSuggestionSelection(items) {
 
 function openCreateRevenuePopup() {
     loadRevenueAcademicYears();
+    loadBranches('branchSelect');
     document.getElementById('createRevenuePopup').classList.add('active');
 }
 
@@ -365,6 +367,7 @@ function clearRevenueForm() {
     document.getElementById('revenueYearSelect').innerHTML = '<option value="">-- Chọn năm học --</option>';
     document.getElementById('revenueClassSelect').innerHTML = '<option value="">-- Chọn lớp học --</option>';
     document.getElementById('revenueSubjectSelect').innerHTML = '<option value="">-- Chọn môn học --</option>';
+    document.getElementById('branchSelect').innerHTML = '<option value="">-- Chọn cơ sở --</option>';
     document.getElementById('studentSearchInput').value = '';
     document.getElementById('studentIdInput').value = '';
     document.getElementById('studentNameInput').value = '';
@@ -411,12 +414,12 @@ function setupFormSubmitHandler() {
 }
 
 function clearSearchFilters() {
+    document.getElementById('branchSearchSelect').value = '';
     document.getElementById('codeInput').value = '';
     document.getElementById('studentInput').value = '';
     document.getElementById('cashierInput').value = '';
     document.getElementById('fromInput').value = '';
     document.getElementById('toInput').value = '';
-    document.getElementById('searchForm').submit();
 }
 
 function changePageSize(size) {
@@ -424,6 +427,26 @@ function changePageSize(size) {
     url.searchParams.set('size', size);
     url.searchParams.set('page', '0');
     window.location.href = url.toString();
+}
+
+function loadBranches(selectId) {
+    fetch('/transactions/api/branches')
+        .then(response => response.json())
+        .then(data => {
+            const branchSelect = document.getElementById(selectId);
+            const selectedBranchId = document.getElementById('selectedBranchId')?.value;
+
+            data.forEach(branch => {
+                const option = document.createElement('option');
+                option.value = branch.id;
+                option.textContent = branch.name;
+                if (selectId === 'branchSearchSelect' && branch.id.toString() === selectedBranchId) {
+                    option.selected = true;
+                }
+                branchSelect.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Error loading branches:', error));
 }
 
 // Escape key handler
