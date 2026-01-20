@@ -63,6 +63,8 @@ function updateStats(data) {
         balanceEl.classList.remove('negative');
     }
 
+    updateExportButtons(data);
+
     updateBarChart('subjectChart', data.bySubject, data.totalRevenue);
     updateBarChart('classChart', data.byClass, data.totalRevenue);
 
@@ -131,6 +133,47 @@ function updateTimelineChart(timelineData) {
 
     html += '</div></div>';
     container.innerHTML = html;
+}
+
+function setButtonDisabled(id, disabled) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.disabled = !!disabled;
+}
+
+function updateExportButtons(data) {
+    const revenueCount = Number(data?.revenueCount ?? 0);
+    const expenseCount = Number(data?.expenseCount ?? 0);
+
+    const disableExcel = revenueCount === 0;
+    const disableFund = (revenueCount + expenseCount) === 0;
+
+    setButtonDisabled('exportExcelBtnMonth', disableExcel);
+    setButtonDisabled('exportExcelBtnQuarter', disableExcel);
+    setButtonDisabled('exportExcelBtnYear', disableExcel);
+
+    setButtonDisabled('exportFundBtnMonth', disableFund);
+    setButtonDisabled('exportFundBtnQuarter', disableFund);
+    setButtonDisabled('exportFundBtnYear', disableFund);
+}
+
+function exportFund() {
+    let url = '/api/dashboard/export-fund?type=' + currentTab;
+
+    if (currentTab === 'month') {
+        const month = document.getElementById('monthSelect').value;
+        const year = document.getElementById('monthYearSelect').value;
+        url += `&month=${month}&year=${year}`;
+    } else if (currentTab === 'quarter') {
+        const quarter = document.getElementById('quarterSelect').value;
+        const year = document.getElementById('quarterYearSelect').value;
+        url += `&quarter=${quarter}&year=${year}`;
+    } else {
+        const year = document.getElementById('yearSelect').value;
+        url += `&year=${year}`;
+    }
+
+    window.location.href = url;
 }
 
 function exportReport() {

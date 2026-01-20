@@ -130,4 +130,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, String
             @Param("type") String type);
 
     List<Transaction> findByDateOfRecordedBetweenOrderByDateOfRecordedAsc(LocalDate startDate, LocalDate endDate);
+
+    List<Transaction> findByDateOfRecordedBetweenAndTypeOrderByDateOfRecordedAsc(
+            LocalDate startDate, LocalDate endDate, String type);
 }

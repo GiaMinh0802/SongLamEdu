@@ -76,6 +76,26 @@ public class DashboardController {
     }
 
 
+    @GetMapping("/api/dashboard/export-fund")
+    public ResponseEntity<byte[]> exportFund(
+            @RequestParam String type,
+            @RequestParam int year,
+            @RequestParam(required = false) Integer month,
+            @RequestParam(required = false) Integer quarter) throws IOException {
+
+        byte[] excelBytes = excelReportService.generateCashBookReport(type, year, month, quarter, true);
+
+        String filename = "So_quy_tien_mat_" + year;
+        if (month != null) filename += "_T" + month;
+        if (quarter != null) filename += "_Q" + quarter;
+        filename += ".xlsx";
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(excelBytes);
+    }
+
     @GetMapping("/api/dashboard/export")
     public ResponseEntity<byte[]> exportReport(
             @RequestParam String type,
@@ -83,9 +103,9 @@ public class DashboardController {
             @RequestParam(required = false) Integer month,
             @RequestParam(required = false) Integer quarter) throws IOException {
 
-        byte[] excelBytes = excelReportService.generateCashBookReport(type, year, month, quarter);
+        byte[] excelBytes = excelReportService.generateCashBookReport(type, year, month, quarter, false);
 
-        String filename = "So_quy_tien_mat_" + year;
+        String filename = "Report_" + year;
         if (month != null) filename += "_T" + month;
         if (quarter != null) filename += "_Q" + quarter;
         filename += ".xlsx";

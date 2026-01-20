@@ -1,5 +1,6 @@
 package com.songlam.edu.service;
 
+import com.songlam.edu.entity.Branches;
 import com.songlam.edu.entity.Transaction;
 import com.songlam.edu.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +15,11 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +27,8 @@ public class ExcelReportService {
 
     private final TransactionRepository transactionRepository;
 
-    public byte[] generateCashBookReport(String type, int year, Integer month, Integer quarter) throws IOException {
+    public byte[] generateCashBookReport(String type, int year, Integer month, Integer quarter, boolean isFund)
+            throws IOException {
         LocalDate startDate;
         LocalDate endDate;
         String periodTitle;
@@ -47,13 +53,149 @@ public class ExcelReportService {
                 break;
         }
 
-        List<Transaction> transactions = transactionRepository
-                .findByDateOfRecordedBetweenOrderByDateOfRecordedAsc(startDate, endDate);
+        byte[] rerport = null;
 
-        return createExcelReport(transactions, periodTitle);
+        if (isFund) {
+            List<Transaction> transactions = transactionRepository
+                    .findByDateOfRecordedBetweenOrderByDateOfRecordedAsc(startDate, endDate);
+            rerport = createExcelFund(transactions, periodTitle);
+        } else {
+            List<Transaction> transactions = transactionRepository
+                    .findByDateOfRecordedBetweenAndTypeOrderByDateOfRecordedAsc(startDate, endDate, "PT");
+            Map<Branches, List<Transaction>> groupByBranch =
+                    transactions.stream()
+                            .collect(Collectors.groupingBy(Transaction::getBranch));
+            groupByBranch.values().removeIf(List::isEmpty);
+            periodTitle = "Kỳ kê khai: " + periodTitle;
+            rerport = createExcelReport(groupByBranch, periodTitle);
+        }
+
+        return rerport;
     }
 
-    private byte[] createExcelReport(List<Transaction> transactions, String periodTitle) throws IOException {
+    private byte[] createExcelReport(Map<Branches, List<Transaction>> map, String periodTitle) throws IOException {
+        InputStream templateStream = new ClassPathResource("templates/sample/TT_152.xlsx").getInputStream();
+        Workbook workbook = new XSSFWorkbook(templateStream);
+        Sheet templateSheet = workbook.getSheetAt(0);
+
+        List<String> sheetNames = new ArrayList<>();
+
+        for (Map.Entry<Branches, List<Transaction>> entry : map.entrySet()) {
+            Branches branch = entry.getKey();
+            List<Transaction> transactions = entry.getValue();
+
+            Sheet sheet = workbook.cloneSheet(workbook.getSheetIndex(templateSheet));
+
+            String sheetName = branch.getName();
+            workbook.setSheetName(workbook.getSheetIndex(sheet), sheetName);
+            sheetNames.add(sheetName);
+
+            Row row5 = sheet.getRow(4);
+            if (row5 != null) {
+                Cell periodCell = row5.getCell(0);
+                if (periodCell != null) {
+                    periodCell.setCellValue(periodTitle);
+                }
+            }
+
+            BigDecimal total = BigDecimal.ZERO;
+            BigDecimal GTGT = BigDecimal.ZERO;
+            BigDecimal TNCN = BigDecimal.ZERO;
+
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+            int dataStartRow = 11;
+
+            Row templateRow = sheet.getRow(dataStartRow-1);
+
+            if (transactions.size() > 0 && sheet.getLastRowNum() >= dataStartRow) {
+                sheet.shiftRows(dataStartRow, sheet.getLastRowNum(), transactions.size());
+            }
+
+            for (int i = 0; i < transactions.size(); i++) {
+                Transaction t = transactions.get(i);
+                int rowIndex = dataStartRow + i;
+
+                Row row = sheet.createRow(rowIndex);
+                if (templateRow != null) {
+                    row.setHeight(templateRow.getHeight());
+                    copyRowStyle(templateRow, row);
+                }
+
+                Cell cellA = getOrCreateCell(row, 0);
+                cellA.setCellValue(t.getTransactionNumber());
+
+                Cell cellB = getOrCreateCell(row, 1);
+                cellB.setCellValue(t.getDateOfRecorded().format(dateFormatter));
+
+                String value = t.getStudent().getPerson().getFullName() + " " +
+                        t.getSchoolClass().getClassName() + " " + t.getReason();
+                Cell cellC = getOrCreateCell(row, 2);
+                cellC.setCellValue(value);
+
+                Cell cellD = getOrCreateCell(row, 3);
+                cellD.setCellValue(t.getAmount().doubleValue());
+                total = total.add(t.getAmount());
+            }
+
+            GTGT = total.multiply(new BigDecimal(0.05));
+            TNCN = total.multiply(new BigDecimal(0.02));
+
+            int totalRowIndex = dataStartRow + transactions.size();
+            int GTGTRowIndex = totalRowIndex + 1;
+            int TNCNRowIndex = totalRowIndex + 2;
+
+            Row rowTotal = sheet.getRow(totalRowIndex);
+            if (rowTotal != null) {
+                Cell cellD = getOrCreateCell(rowTotal, 3);
+                cellD.setCellValue(total.doubleValue());
+            }
+
+            Row rowGTGT = sheet.getRow(GTGTRowIndex);
+            if (rowGTGT != null) {
+                Cell cellD = getOrCreateCell(rowGTGT, 3);
+                cellD.setCellValue(GTGT.doubleValue());
+            }
+
+            Row rowTNCN = sheet.getRow(TNCNRowIndex);
+            if (rowTNCN != null) {
+                Cell cellD = getOrCreateCell(rowTNCN, 3);
+                cellD.setCellValue(TNCN.doubleValue());
+            }
+
+            int lastRowNum = sheet.getLastRowNum();
+
+            Row row = sheet.getRow(dataStartRow - 1);
+            if (row != null) {
+                sheet.removeRow(row);
+            }
+
+            if (dataStartRow - 1 < lastRowNum) {
+                sheet.shiftRows(dataStartRow - 1 + 1, lastRowNum, -1);
+            }
+        }
+
+        workbook.removeSheetAt(workbook.getSheetIndex(templateSheet));
+
+        Collections.sort(sheetNames);
+
+        for (int i = 0; i < sheetNames.size(); i++) {
+            String sheetName = sheetNames.get(i);
+            int currentIndex = workbook.getSheetIndex(sheetName);
+            workbook.setSheetOrder(sheetName, i);
+        }
+
+        workbook.setActiveSheet(0);
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+        templateStream.close();
+
+        return outputStream.toByteArray();
+    }
+
+    private byte[] createExcelFund(List<Transaction> transactions, String periodTitle) throws IOException {
 
         InputStream templateStream = new ClassPathResource("templates/sample/So_quy_tien_mat.xlsx").getInputStream();
         Workbook workbook = new XSSFWorkbook(templateStream);
@@ -317,6 +459,16 @@ public class ExcelReportService {
         templateStream.close();
 
         return outputStream.toByteArray();
+    }
+
+    private void copyRowStyle(Row sourceRow, Row targetRow) {
+        for (int i = 0; i < sourceRow.getLastCellNum(); i++) {
+            Cell sourceCell = sourceRow.getCell(i);
+            if (sourceCell != null) {
+                Cell targetCell = targetRow.createCell(i);
+                targetCell.setCellStyle(sourceCell.getCellStyle());
+            }
+        }
     }
 
     private Cell getOrCreateCell(Row row, int columnIndex) {

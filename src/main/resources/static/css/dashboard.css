@@ -592,6 +592,14 @@
     margin-left: auto;
 }
 
+.btn.btn-export:disabled,
+.btn.btn-export[disabled] {
+    opacity: 0.45;
+    cursor: not-allowed;
+    filter: grayscale(40%);
+    pointer-events: none; /* extra safety: prevent clicks */
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .dashboard-tabs {
